@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 112" role="img" aria-label="ZenRay">
+  <path d="M42 1H155L100 73H142L126 111H4L60 39H26Z" fill="#0B2D4D" stroke="#0B2D4D" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M62 52L160 30V74Z" fill="#FFFFFF"/>
+  <g stroke="#F28C28" stroke-width="3.2" stroke-linecap="round">
+    <line x1="86" y1="47" x2="150" y2="33"/>
+    <line x1="86" y1="49.5" x2="150" y2="42.5"/>
+    <line x1="86" y1="52" x2="150" y2="52"/>
+    <line x1="86" y1="54.5" x2="150" y2="61.5"/>
+    <line x1="86" y1="57" x2="150" y2="71"/>
+  </g>
+  <circle cx="62" cy="52" r="17" fill="#FFFFFF"/>
+  <circle cx="62" cy="52" r="13" fill="#0B2D4D"/>
+  <circle cx="62" cy="52" r="7.5" fill="#FFFFFF"/>
+  <circle cx="62" cy="52" r="4.5" fill="#F28C28"/>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 486 124" role="img" aria-label="ZenRay Medical Systems">
+  <g transform="translate(0 6)">
+    <path d="M42 1H155L100 73H142L126 111H4L60 39H26Z" fill="#E7F1F7" stroke="#E7F1F7" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M62 52L160 30V74Z" fill="#02070B"/>
+    <g stroke="#F28C28" stroke-width="3.2" stroke-linecap="round">
+      <line x1="86" y1="47" x2="150" y2="33"/>
+      <line x1="86" y1="49.5" x2="150" y2="42.5"/>
+      <line x1="86" y1="52" x2="150" y2="52"/>
+      <line x1="86" y1="54.5" x2="150" y2="61.5"/>
+      <line x1="86" y1="57" x2="150" y2="71"/>
+    </g>
+    <circle cx="62" cy="52" r="17" fill="#02070B"/>
+    <circle cx="62" cy="52" r="13" fill="#E7F1F7"/>
+    <circle cx="62" cy="52" r="7.5" fill="#02070B"/>
+    <circle cx="62" cy="52" r="4.5" fill="#F28C28"/>
+  </g>
+  <g font-family="Montserrat, Poppins, 'Segoe UI', Arial, sans-serif">
+    <text x="180" y="62" font-size="70" font-weight="700" letter-spacing="2"><tspan fill="#E7F1F7">ZEN</tspan><tspan fill="#F28C28">RAY</tspan></text>
+    <text x="182" y="90" font-size="19" font-weight="600" letter-spacing="7.6" fill="#E7F1F7">MEDICAL SYSTEMS</text>
+    <rect x="182" y="100" width="292" height="1.5" fill="#2A4759"/>
+    <text x="182" y="118" font-size="11.5" font-weight="600" letter-spacing="1.6" fill="#E7F1F7">PRECISION IMAGING. BETTER DIAGNOSTICS.</text>
+  </g>
+</svg>
