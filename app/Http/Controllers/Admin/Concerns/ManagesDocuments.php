@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Concerns;
 
 use App\Models\InventoryItem;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -30,6 +31,8 @@ trait ManagesDocuments
                     'price' => (float) $item->sale_price,
                     'stock' => $item->quantity,
                 ]),
+            // Services have no stored price and no stock, so the editor only fills in the name.
+            'services' => Service::query()->active()->ordered()->pluck('name'),
             'items' => old('items', $document->exists
                 ? $document->items->map->only(['inventory_item_id', 'description', 'quantity', 'unit', 'unit_price'])->all()
                 : [['inventory_item_id' => null, 'description' => '', 'quantity' => 1, 'unit' => null, 'unit_price' => '']]),

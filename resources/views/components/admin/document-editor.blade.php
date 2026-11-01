@@ -1,9 +1,10 @@
 {{--
     Quote / invoice editor: customer, dates, line items with live totals.
-    Line items can be picked from inventory (fills description, unit and price)
-    or typed freely for services. Behaviour lives in app.js ([data-doc-editor]).
+    Line items can be picked from inventory (fills description, unit and price),
+    picked from services (fills the name, price is typed) or typed freely.
+    Behaviour lives in app.js ([data-doc-editor]).
 --}}
-@props(['document', 'type', 'customers', 'inventory', 'items', 'action', 'method' => 'POST'])
+@props(['document', 'type', 'customers', 'inventory', 'services', 'items', 'action', 'method' => 'POST'])
 
 @php
     $isQuote = $type === 'quote';
@@ -102,7 +103,7 @@
                 <table class="w-full min-w-[56rem] text-left text-sm">
                     <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500 uppercase">
                         <tr>
-                            <th scope="col" class="w-56 px-4 py-3 pl-6">Inventory item</th>
+                            <th scope="col" class="w-56 px-4 py-3 pl-6">Product or service</th>
                             <th scope="col" class="px-4 py-3">Description</th>
                             <th scope="col" class="w-24 px-4 py-3">Qty</th>
                             <th scope="col" class="w-24 px-4 py-3">Unit</th>
@@ -113,13 +114,13 @@
                     </thead>
                     <tbody class="divide-y divide-navy-50" data-rows>
                         @foreach ($items as $index => $row)
-                            @include('admin.documents.line-row', ['index' => $index, 'row' => $row, 'inventory' => $inventory, 'input' => $input])
+                            @include('admin.documents.line-row', ['index' => $index, 'row' => $row, 'inventory' => $inventory, 'services' => $services, 'input' => $input])
                         @endforeach
                     </tbody>
                 </table>
             </div>
             <template data-row-template>
-                @include('admin.documents.line-row', ['index' => '__INDEX__', 'row' => [], 'inventory' => $inventory, 'input' => $input])
+                @include('admin.documents.line-row', ['index' => '__INDEX__', 'row' => [], 'inventory' => $inventory, 'services' => $services, 'input' => $input])
             </template>
 
             <div class="flex flex-col gap-6 border-t border-navy-100 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">

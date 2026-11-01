@@ -257,6 +257,62 @@ if (quickView && typeof quickView.showModal === 'function') {
     });
 }
 
+// Film viewer gallery: hover or focus opens a panel on large screens, swiping
+// centres one on small screens. The active panel develops into colour (app.css).
+document.querySelectorAll('[data-gallery]').forEach((gallery) => {
+    const track = gallery.querySelector('[data-gallery-track]');
+    const panels = [...gallery.querySelectorAll('[data-gallery-panel]')];
+    const current = gallery.querySelector('[data-gallery-current]');
+    const progress = gallery.querySelector('[data-gallery-progress]');
+    const large = window.matchMedia('(min-width: 64rem)');
+    let active = parseInt(gallery.dataset.galleryStart, 10) || 0;
+
+    const setActive = (index) => {
+        if (index === active) return;
+        panels[active]?.classList.remove('is-active');
+        panels[index].classList.add('is-active');
+        active = index;
+        if (current) current.textContent = String(index + 1).padStart(2, '0');
+        if (progress) progress.style.width = `${((index + 1) / panels.length) * 100}%`;
+    };
+
+    const centreOn = (index, behavior = reduceMotion ? 'auto' : 'smooth') => {
+        const panel = panels[index];
+        track.scrollTo({ left: panel.offsetLeft - (track.clientWidth - panel.offsetWidth) / 2, behavior });
+    };
+
+    const goTo = (index) => {
+        const next = (index + panels.length) % panels.length;
+        setActive(next);
+        centreOn(next);
+    };
+
+    panels.forEach((panel, index) => {
+        panel.addEventListener('pointerenter', () => {
+            if (large.matches) setActive(index);
+        });
+        panel.addEventListener('focusin', () => setActive(index));
+    });
+
+    gallery.querySelector('[data-gallery-prev]')?.addEventListener('click', () => goTo(active - 1));
+    gallery.querySelector('[data-gallery-next]')?.addEventListener('click', () => goTo(active + 1));
+
+    // While swiping, the panel nearest the middle of the track is the active one.
+    let ticking = false;
+    track.addEventListener('scroll', () => {
+        if (large.matches || ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            ticking = false;
+            const middle = track.scrollLeft + track.clientWidth / 2;
+            const distance = (panel) => Math.abs(panel.offsetLeft + panel.offsetWidth / 2 - middle);
+            setActive(panels.indexOf(panels.reduce((nearest, panel) => (distance(panel) < distance(nearest) ? panel : nearest))));
+        });
+    }, { passive: true });
+
+    if (!large.matches) centreOn(active, 'auto');
+});
+
 // Gallery lightbox
 document.querySelectorAll('[data-gallery]').forEach((gallery) => {
     const dialog = gallery.parentElement.querySelector('[data-lightbox]');
@@ -555,11 +611,21 @@ document.querySelectorAll('[data-doc-editor]').forEach((form) => {
     });
 
     // Picking an inventory item fills in its description, unit and price.
+    // Picking a service fills in its name and leaves the price to be typed.
     rows.addEventListener('change', (event) => {
         if (!event.target.matches('[data-item-picker]')) return;
+        const row = event.target.closest('[data-row]');
+        const service = event.target.selectedOptions[0]?.dataset.service;
+        if (service) {
+            row.querySelector('[data-item-description]').value = service;
+            row.querySelector('[data-item-unit]').value = '';
+            row.querySelector('[data-item-price]').value = '';
+            row.querySelector('[data-item-price]').focus();
+            recalc();
+            return;
+        }
         const item = inventory.get(event.target.value);
         if (!item) return;
-        const row = event.target.closest('[data-row]');
         row.querySelector('[data-item-description]').value = item.description;
         row.querySelector('[data-item-unit]').value = item.unit || '';
         row.querySelector('[data-item-price]').value = item.price.toFixed(2);

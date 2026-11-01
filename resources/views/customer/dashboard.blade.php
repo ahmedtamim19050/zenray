@@ -1,5 +1,5 @@
 <x-layouts.dashboard title="Overview">
-    <x-slot:subtitle>Welcome back, {{ Str::before($user->name, ' ') }}. Here is a summary of your requests.</x-slot:subtitle>
+    <x-slot:subtitle>Welcome back, {{ Str::before($user->name, ' ') }}. Here is a summary of your requests and invoices.</x-slot:subtitle>
 
     {{-- Welcome banner --}}
     <section class="relative isolate mb-8 overflow-hidden rounded-3xl bg-navy-900 p-6 text-white sm:p-8" data-reveal>
@@ -20,14 +20,16 @@
         </div>
     </section>
 
-    <div class="grid gap-4 sm:grid-cols-3" data-stagger>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-stagger>
         <x-dash.stat label="All requests" :value="$stats['total']" icon="document" :href="route('dashboard.enquiries.index')" />
         <x-dash.stat label="Open" :value="$stats['open']" icon="clock" tone="signal" hint="New or being handled" />
         <x-dash.stat label="Quotes sent" :value="$stats['quoted']" icon="mail" tone="sky" />
+        <x-dash.stat label="Unpaid invoices" :value="$stats['unpaid']" icon="folder" tone="slate" :href="route('dashboard.invoices.index')" :hint="$stats['overdue'] ? $stats['overdue'].' overdue' : null" />
     </div>
 
     <div class="mt-8 grid gap-6 xl:grid-cols-3">
-        <x-dash.card title="Recent requests" class="xl:col-span-2" :padded="false">
+        <div class="space-y-6 xl:col-span-2">
+        <x-dash.card title="Recent requests" :padded="false">
             <x-slot:actions>
                 <a href="{{ route('dashboard.enquiries.index') }}" class="text-sm font-semibold text-navy-800 hover:text-signal-700">View all →</a>
             </x-slot:actions>
@@ -47,6 +49,26 @@
                 </x-dash.empty>
             @endforelse
         </x-dash.card>
+
+        <x-dash.card title="Recent invoices" :padded="false">
+            <x-slot:actions>
+                <a href="{{ route('dashboard.invoices.index') }}" class="text-sm font-semibold text-navy-800 hover:text-signal-700">View all →</a>
+            </x-slot:actions>
+
+            @forelse ($recentInvoices as $invoice)
+                <a href="{{ route('dashboard.invoices.show', $invoice) }}" class="flex items-center gap-4 border-b border-navy-50 px-5 py-4 transition last:border-0 hover:bg-slate-50 sm:px-6">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-700"><x-icon name="folder" class="size-5" /></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block truncate font-mono font-semibold text-navy-900">{{ $invoice->number }}</span>
+                        <span class="block text-sm text-slate-500">{{ $invoice->issue_date->format('j M Y') }} · {{ $invoice->money('total') }}</span>
+                    </span>
+                    <x-admin.badge :state="$invoice->state()" />
+                </a>
+            @empty
+                <x-dash.empty icon="folder" title="No invoices yet" text="Invoices from our team will appear here once they are issued." />
+            @endforelse
+        </x-dash.card>
+        </div>
 
         <div class="space-y-6">
             <x-dash.card title="Your details">

@@ -18,6 +18,7 @@ class DashboardController extends Controller
         }
 
         $enquiries = $user->enquiries();
+        $invoices = $user->invoices()->visibleToCustomer();
 
         return view('customer.dashboard', [
             'user' => $user,
@@ -25,8 +26,11 @@ class DashboardController extends Controller
                 'total' => (clone $enquiries)->count(),
                 'open' => (clone $enquiries)->open()->count(),
                 'quoted' => (clone $enquiries)->where('status', 'quoted')->count(),
+                'unpaid' => (clone $invoices)->outstanding()->count(),
+                'overdue' => (clone $invoices)->overdue()->count(),
             ],
             'recent' => (clone $enquiries)->latest()->limit(5)->get(),
+            'recentInvoices' => (clone $invoices)->latest('issue_date')->latest('id')->limit(5)->get(),
         ]);
     }
 }

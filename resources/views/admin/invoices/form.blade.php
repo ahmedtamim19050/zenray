@@ -4,7 +4,7 @@
         <span class="text-slate-500">· Saved as a draft. Stock is taken out of inventory when you issue it.</span>
     </x-slot:subtitle>
 
-    <x-admin.document-editor :document="$invoice" type="invoice" :customers="$customers" :inventory="$inventory" :items="$items"
+    <x-admin.document-editor :document="$invoice" type="invoice" :customers="$customers" :inventory="$inventory" :services="$services" :items="$items"
                              :action="$invoice->exists ? route('admin.invoices.update', $invoice) : route('admin.invoices.store')"
                              :method="$invoice->exists ? 'PUT' : 'POST'" />
 </x-layouts.dashboard>

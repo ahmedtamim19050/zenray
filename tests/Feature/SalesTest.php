@@ -6,6 +6,7 @@ use App\Models\InventoryItem;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\Quote;
+use App\Models\Service;
 use App\Models\User;
 
 function salesAdmin(): User
@@ -98,6 +99,134 @@ test('documents need a customer and at least one valid line', function () {
 
     $this->actingAs(salesAdmin())->post('/admin/invoices', documentPayload([['description' => 'Service', 'quantity' => 0, 'unit_price' => 10]]))
         ->assertSessionHasErrors('items.0.quantity');
+});
+
+test('quote and invoice editors offer active services as line items', function (string $uri) {
+    Service::create(['name' => 'Site survey', 'slug' => 'site-survey']);
+    Service::create(['name' => 'Retired service', 'slug' => 'retired-service', 'is_active' => false]);
+
+    $this->actingAs(salesAdmin())->get($uri)->assertOk()
+        ->assertSee('data-service="Site survey"', false)
+        ->assertDontSee('Retired service');
+})->with(['/admin/quotes/create', '/admin/invoices/create']);
+
+test('a saved service line reselects its service and never touches stock', function () {
+    $admin = salesAdmin();
+    Service::create(['name' => 'Site survey', 'slug' => 'site-survey']);
+
+    $this->actingAs($admin)->post('/admin/invoices', documentPayload([['inventory_item_id' => '', 'description' => 'Site survey', 'quantity' => 1, 'unit_price' => 5000]]))
+        ->assertSessionHasNoErrors();
+    $invoice = Invoice::firstOrFail();
+
+    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}/edit")->assertOk()
+        ->assertSee('data-service="Site survey" selected', false);
+
+    $this->actingAs($admin)->post("/admin/invoices/{$invoice->number}/issue")->assertSessionHasNoErrors();
+
+    expect($invoice->fresh()->status)->toBe('issued')->and($invoice->stockMovements()->count())->toBe(0);
+});
+
+function customerInvoice(User $customer, array $attributes = []): Invoice
+{
+    $invoice = Invoice::create(array_merge([
+        'number' => Invoice::nextNumber(),
+        'user_id' => $customer->id,
+        'status' => 'issued',
+        'customer_name' => $customer->name,
+        'issue_date' => today(),
+        'due_date' => today()->addDays(14),
+        'currency' => 'BDT',
+        'tax_rate' => 0,
+        'discount' => 0,
+    ], $attributes));
+    $invoice->syncItems([['description' => 'Site survey', 'quantity' => 1, 'unit_price' => 5000]]);
+
+    return $invoice;
+}
+
+test('customers see their own issued invoices on the dashboard and invoice list', function (string $uri) {
+    $customer = User::factory()->create();
+    $own = customerInvoice($customer);
+    $draft = customerInvoice($customer, ['status' => 'draft']);
+    $other = customerInvoice(User::factory()->create());
+
+    $this->actingAs($customer)->get($uri)->assertOk()
+        ->assertSee($own->number)
+        ->assertDontSee($draft->number)
+        ->assertDontSee($other->number);
+})->with(['/dashboard', '/dashboard/invoices']);
+
+test('customers cannot open draft invoices or invoices of other customers', function (string $suffix) {
+    $customer = User::factory()->create();
+    $draft = customerInvoice($customer, ['status' => 'draft']);
+    $other = customerInvoice(User::factory()->create());
+
+    $this->actingAs($customer)->get("/dashboard/invoices/{$draft->number}{$suffix}")->assertNotFound();
+    $this->actingAs($customer)->get("/dashboard/invoices/{$other->number}{$suffix}")->assertNotFound();
+})->with(['', '/print']);
+
+test('invoice pages require signing in', function () {
+    $invoice = customerInvoice(User::factory()->create());
+
+    $this->get('/dashboard/invoices')->assertRedirect(route('login'));
+    $this->get("/dashboard/invoices/{$invoice->number}")->assertRedirect(route('login'));
+});
+
+test('a customer invoice shows payments without internal notes or admin links', function () {
+    $customer = User::factory()->create();
+    $invoice = customerInvoice($customer);
+    $invoice->recordPayment(['amount' => 2000, 'paid_on' => today()->toDateString(), 'method' => 'cash', 'reference' => 'REC-1', 'note' => 'Internal remark']);
+
+    $this->actingAs($customer)->get("/dashboard/invoices/{$invoice->number}")->assertOk()
+        ->assertSee('REC-1')
+        ->assertSee('৳3,000.00')
+        ->assertDontSee('Internal remark')
+        ->assertDontSee('/admin/invoices');
+
+    $this->actingAs($customer)->get("/dashboard/invoices/{$invoice->number}/print")->assertOk()
+        ->assertSee(route('dashboard.invoices.show', $invoice), false)
+        ->assertDontSee('/admin/invoices');
+});
+
+test('the invoice list links to details showing dates, items and amounts', function () {
+    $customer = User::factory()->create();
+    $invoice = customerInvoice($customer);
+    $invoice->recordPayment(['amount' => 5000, 'paid_on' => today()->toDateString(), 'method' => 'cash']);
+
+    $this->actingAs($customer)->get('/dashboard/invoices')->assertOk()
+        ->assertSee(route('dashboard.invoices.show', $invoice), false);
+
+    $this->actingAs($customer)->get("/dashboard/invoices/{$invoice->number}")->assertOk()
+        ->assertSee('Invoice details')
+        ->assertSee('Site survey')
+        ->assertSee($invoice->due_date->format('j M Y'))
+        ->assertSee('৳5,000.00')
+        ->assertSee('Paid in full');
+});
+
+test('invoices carry the logo watermark for admins and customers, quotes do not', function () {
+    $admin = salesAdmin();
+    $customer = User::factory()->create();
+    $invoice = customerInvoice($customer);
+
+    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}")->assertOk()->assertSee('data-watermark', false);
+    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}/print")->assertOk()->assertSee('data-watermark', false);
+    $this->actingAs($customer)->get("/dashboard/invoices/{$invoice->number}")->assertOk()->assertSee('data-watermark', false);
+    $this->actingAs($customer)->get("/dashboard/invoices/{$invoice->number}/print")->assertOk()->assertSee('data-watermark', false);
+
+    $this->actingAs($admin)->post('/admin/quotes', documentPayload([['description' => 'Site survey', 'quantity' => 1, 'unit_price' => 5000]]));
+    $this->actingAs($admin)->get('/admin/quotes/'.Quote::firstOrFail()->number.'/print')->assertOk()->assertDontSee('data-watermark', false);
+});
+
+test('the customer dashboard counts unpaid and overdue invoices', function () {
+    $customer = User::factory()->create();
+    customerInvoice($customer);
+    customerInvoice($customer, ['issue_date' => today()->subDays(30), 'due_date' => today()->subDay()]);
+    customerInvoice($customer, ['status' => 'void']);
+
+    $this->actingAs($customer)->get('/dashboard')->assertOk()
+        ->assertViewHas('stats', fn (array $stats) => $stats['unpaid'] === 2 && $stats['overdue'] === 1)
+        ->assertSee('1 overdue');
 });
 
 test('a quote can be started from an enquiry', function () {

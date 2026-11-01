@@ -20,11 +20,16 @@
 <article {{ $attributes->class('doc-paper relative mx-auto w-full max-w-[52rem] overflow-hidden bg-white text-[0.875rem] leading-relaxed text-slate-700') }}>
     <div class="h-2 bg-linear-to-r from-navy-800 via-navy-700 to-signal-500" aria-hidden="true"></div>
 
+    {{-- An img rather than a CSS background, because browsers skip backgrounds when printing. --}}
+    @unless ($isQuote)
+        <img src="{{ asset('images/zenray-mark.svg') }}" alt="" width="160" height="112" class="pointer-events-none absolute top-1/2 left-1/2 w-3/5 max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.12] select-none" aria-hidden="true" data-watermark>
+    @endunless
+
     @if ($stamp)
         <span class="pointer-events-none absolute top-40 right-10 rotate-[-14deg] rounded-lg border-4 px-4 py-1 font-mono text-4xl font-bold tracking-widest opacity-25 {{ $stamp[1] }}" aria-hidden="true">{{ $stamp[0] }}</span>
     @endif
 
-    <div class="p-8 sm:p-12">
+    <div class="relative p-8 sm:p-12">
         {{-- Header --}}
         <header class="flex flex-col justify-between gap-8 sm:flex-row">
             <div>
@@ -55,7 +60,7 @@
         </header>
 
         {{-- Parties --}}
-        <div class="mt-10 grid gap-6 rounded-xl bg-slate-50 p-5 sm:grid-cols-2">
+        <div class="mt-10 grid gap-6 rounded-xl bg-slate-50/60 p-5 sm:grid-cols-2">
             <div>
                 <p class="text-[0.6875rem] font-semibold tracking-widest text-slate-400 uppercase">{{ $isQuote ? 'Prepared for' : 'Bill to' }}</p>
                 <p class="mt-1.5 font-bold text-navy-900">{{ $document->customer_name }}</p>

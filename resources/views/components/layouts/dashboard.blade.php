@@ -45,6 +45,7 @@
                 $link('Overview', 'dashboard', 'layers', 'dashboard'),
                 $link('My enquiries', 'dashboard.enquiries.index', 'mail', 'dashboard.enquiries.index|dashboard.enquiries.show'),
                 $link('New request', 'dashboard.enquiries.create', 'chat', 'dashboard.enquiries.create'),
+                $link('My invoices', 'dashboard.invoices.index', 'folder', 'dashboard.invoices.*', $user->invoices()->overdue()->count() ?: null),
                 $link('Profile & password', 'profile.edit', 'user', 'profile.*'),
             ],
         ];

@@ -166,6 +166,139 @@
     filter: grayscale(1) invert(1) sepia(0.6) hue-rotate(155deg) saturate(1.8) contrast(1.25) brightness(0.95);
 }
 
+/* Film viewer gallery: negatives that develop into colour when active. A swipeable
+   track on small screens, side-by-side panels that open on large screens. */
+@keyframes gallery-scan {
+    from {
+        opacity: 1;
+        transform: translateX(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(250%);
+    }
+}
+
+.gallery-track {
+    padding-inline: 9%;
+    scrollbar-width: none;
+}
+
+.gallery-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* The track's side padding leaves room for the neighbours to peek in. */
+.gallery-panel {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    max-height: 75vh;
+    transform: scale(0.95);
+    transition: transform 0.5s ease, box-shadow 0.5s ease, flex-grow 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.gallery-panel.is-active {
+    transform: none;
+    box-shadow: 0 0 44px -14px rgb(46 199 240 / 0.55);
+}
+
+.gallery-photo {
+    filter: grayscale(1) invert(1) sepia(0.6) hue-rotate(155deg) saturate(1.8) contrast(1.25) brightness(0.8);
+    transition: filter 0.8s ease;
+}
+
+.is-active .gallery-photo {
+    filter: none;
+}
+
+.gallery-scan {
+    opacity: 0;
+    background: linear-gradient(90deg, transparent, rgb(46 199 240 / 0.28) 80%, rgb(155 234 255 / 0.85));
+}
+
+.is-active .gallery-scan {
+    animation: gallery-scan 1s ease-out;
+}
+
+.gallery-corners {
+    opacity: 0;
+    transition: opacity 0.5s ease 0.2s;
+    background:
+        linear-gradient(var(--color-glow-300), var(--color-glow-300)) top left / 1.5rem 2px,
+        linear-gradient(var(--color-glow-300), var(--color-glow-300)) top left / 2px 1.5rem,
+        linear-gradient(var(--color-glow-300), var(--color-glow-300)) top right / 1.5rem 2px,
+        linear-gradient(var(--color-glow-300), var(--color-glow-300)) top right / 2px 1.5rem;
+    background-repeat: no-repeat;
+}
+
+.is-active .gallery-corners {
+    opacity: 1;
+}
+
+@media (min-width: 40rem) {
+    .gallery-track {
+        padding-inline: 21%;
+    }
+}
+
+@media (min-width: 64rem) {
+    .gallery-track {
+        padding-inline: 0;
+    }
+
+    .gallery-panel {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 5rem;
+        height: 36rem;
+        aspect-ratio: auto;
+        max-height: none;
+        transform: none;
+    }
+
+    .gallery-panel.is-active {
+        flex-grow: 6;
+    }
+
+    /* Darkens the negative so the number and sideways caption stay readable. */
+    .gallery-spine {
+        background: linear-gradient(rgb(2 7 11 / 0.7), rgb(2 7 11 / 0.3) 25%, rgb(2 7 11 / 0.45) 55%, rgb(2 7 11 / 0.9));
+        transition: opacity 0.3s ease 0.2s;
+    }
+
+    .is-active .gallery-spine {
+        opacity: 0;
+        transition-delay: 0s;
+    }
+
+    /* Keeps its width while the panel opens, so the text fades in instead of rewrapping. */
+    .gallery-caption {
+        width: max(100%, 34rem);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .is-active .gallery-caption {
+        width: 100%;
+        opacity: 1;
+        transition: opacity 0.4s ease 0.35s;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gallery-panel,
+    .gallery-photo,
+    .gallery-corners,
+    .gallery-spine,
+    .gallery-caption {
+        transition: none;
+    }
+
+    .is-active .gallery-scan {
+        animation: none;
+    }
+}
+
 /* X-ray frame: a base layer plus a second layer revealed by a scanning beam
    ([data-scan]) and/or a pointer lens ([data-xray-lens], driven by app.js). */
 @keyframes xray-sweep {

@@ -17,7 +17,7 @@
     </head>
     <body class="min-h-screen bg-slate-200 py-8 font-sans antialiased print:p-0">
         <div class="no-print mx-auto mb-6 flex max-w-[52rem] flex-wrap items-center justify-between gap-3 px-4">
-            <a href="{{ route($type === 'quote' ? 'admin.quotes.show' : 'admin.invoices.show', $document) }}" class="text-sm font-semibold text-navy-800 hover:text-signal-700">← Back to {{ $type }}</a>
+            <a href="{{ $backUrl ?? route($type === 'quote' ? 'admin.quotes.show' : 'admin.invoices.show', $document) }}" class="text-sm font-semibold text-navy-800 hover:text-signal-700">← Back to {{ $type }}</a>
             <div class="flex items-center gap-3">
                 <p class="hidden text-sm text-slate-600 sm:block">Choose “Save as PDF” in the print dialog to download.</p>
                 <button type="button" onclick="window.print()" class="inline-flex h-10 items-center gap-2 rounded-full bg-navy-800 px-5 text-sm font-semibold text-white hover:bg-navy-700">

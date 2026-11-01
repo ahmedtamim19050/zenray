@@ -178,7 +178,7 @@ class AdminContent
                 'fields' => [
                     'photo' => ['label' => 'Photo', 'type' => 'image', 'required' => true],
                     'caption' => ['label' => 'Caption', 'type' => 'text', 'rules' => ['required', 'string', 'max:255'], 'help' => 'Also used as the image description.'],
-                    'size' => ['label' => 'Tile size', 'type' => 'select', 'options' => fn () => ['normal' => 'Normal', 'wide' => 'Wide', 'tall' => 'Tall', 'large' => 'Large'], 'rules' => ['required', 'in:normal,wide,tall,large'], 'default' => 'normal'],
+                    'size' => ['label' => 'Tile size', 'type' => 'select', 'options' => fn () => ['normal' => 'Normal', 'wide' => 'Wide', 'tall' => 'Tall', 'large' => 'Large'], 'rules' => ['required', 'in:normal,wide,tall,large'], 'default' => 'normal', 'help' => 'The first Large photo starts open in the gallery. All other sizes look the same.'],
                     'sort_order' => $order,
                     'is_active' => $active,
                 ],

@@ -72,6 +72,9 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard/enquiries', [Customer\EnquiryController::class, 'index'])->name('dashboard.enquiries.index');
     Route::get('dashboard/enquiries/new', [Customer\EnquiryController::class, 'create'])->name('dashboard.enquiries.create');
     Route::get('dashboard/enquiries/{enquiry}', [Customer\EnquiryController::class, 'show'])->name('dashboard.enquiries.show');
+    Route::get('dashboard/invoices', [Customer\InvoiceController::class, 'index'])->name('dashboard.invoices.index');
+    Route::get('dashboard/invoices/{number}', [Customer\InvoiceController::class, 'show'])->name('dashboard.invoices.show');
+    Route::get('dashboard/invoices/{number}/print', [Customer\InvoiceController::class, 'print'])->name('dashboard.invoices.print');
 
     /*
     | Admin dashboard

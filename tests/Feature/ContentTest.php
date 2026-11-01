@@ -148,3 +148,13 @@ test('published projects get their own page', function () {
 test('the admin overview shows content and blog summaries', function () {
     $this->actingAs(admin())->get('/admin')->assertOk()->assertSee('Website content')->assertSee('Latest blog posts');
 });
+
+test('the gallery starts on the first large photo, or the first photo without one', function (array $sizes, int $start) {
+    $items = array_map(fn (string $size) => ['photo' => 'c-arm', 'caption' => 'Photo', 'size' => $size], $sizes);
+
+    $this->blade('<x-gallery :items="$items" />', ['items' => $items])
+        ->assertSee('data-gallery-start="'.$start.'"', false);
+})->with([
+    'a large photo' => [['normal', 'large', 'large'], 1],
+    'no large photo' => [['normal', 'wide'], 0],
+]);

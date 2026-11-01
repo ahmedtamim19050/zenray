@@ -7,12 +7,21 @@
 
 <tr class="align-top" data-row>
     <td class="px-4 py-3 pl-6">
-        <label class="sr-only" for="item-{{ $index }}-inventory">Inventory item</label>
+        <label class="sr-only" for="item-{{ $index }}-inventory">Product or service</label>
         <select id="item-{{ $index }}-inventory" name="{{ $name('inventory_item_id') }}" class="{{ $cell }} pr-8 text-sm" data-item-picker>
-            <option value="">Service / custom line</option>
-            @foreach ($inventory as $item)
-                <option value="{{ $item['id'] }}" @selected((string) ($row['inventory_item_id'] ?? '') === (string) $item['id'])>{{ $item['label'] }} ({{ $item['stock'] }} in stock)</option>
-            @endforeach
+            <option value="">Custom line</option>
+            @if ($services->isNotEmpty())
+                <optgroup label="Services">
+                    @foreach ($services as $service)
+                        <option value="" data-service="{{ $service }}" @selected(blank($row['inventory_item_id'] ?? null) && ($row['description'] ?? null) === $service)>{{ $service }}</option>
+                    @endforeach
+                </optgroup>
+            @endif
+            <optgroup label="Inventory">
+                @foreach ($inventory as $item)
+                    <option value="{{ $item['id'] }}" @selected((string) ($row['inventory_item_id'] ?? '') === (string) $item['id'])>{{ $item['label'] }} ({{ $item['stock'] }} in stock)</option>
+                @endforeach
+            </optgroup>
         </select>
     </td>
     <td class="px-4 py-3">

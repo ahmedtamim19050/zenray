@@ -186,6 +186,16 @@ class Invoice extends Model
     }
 
     /**
+     * Invoices a customer may see: everything except drafts.
+     *
+     * @param  Builder<Invoice>  $query
+     */
+    public function scopeVisibleToCustomer(Builder $query): void
+    {
+        $query->where('status', '!=', 'draft');
+    }
+
+    /**
      * Issued invoices with money still owed.
      *
      * @param  Builder<Invoice>  $query
