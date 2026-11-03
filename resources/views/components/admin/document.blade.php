@@ -194,12 +194,6 @@
             </div>
         @endif
 
-        @unless ($isQuote)
-            <div class="mt-20 flex justify-end break-inside-avoid" data-signature>
-                <p class="w-56 border-t border-navy-800 pt-1.5 text-center text-xs font-semibold text-navy-900">Authorized signature</p>
-            </div>
-        @endunless
-
         @if ($isQuote)
             <footer class="mt-10 flex items-center justify-between gap-4 border-t border-slate-200 pt-4 text-[0.6875rem] text-slate-400">
                 <p>{{ config('zenray.name') }} · {{ config('zenray.tagline') }}</p>
@@ -210,11 +204,15 @@
 
     @unless ($isQuote)
             </td></tr></tbody>
-            <tfoot class="hidden print:table-footer-group"><tr><td class="h-[28mm]"></td></tr></tfoot>
+            <tfoot class="hidden print:table-footer-group"><tr><td class="h-[52mm]"></td></tr></tfoot>
         </table>
 
+        <div @class(['relative mt-auto flex justify-end px-6 pt-16 sm:px-[7%] print:fixed print:inset-x-0 print:bottom-[28mm] print:pt-0 print:pb-0', 'pb-4' => ! $onPad, 'pb-[28mm]' => $onPad]) data-signature>
+            <p class="w-56 border-t border-navy-800 pt-1.5 text-center text-xs font-semibold text-navy-900">Authorized signature</p>
+        </div>
+
         @unless ($onPad)
-            <footer class="relative mt-auto grid min-h-[24mm] gap-2 bg-[#2E3192] px-[5%] py-3 text-xs leading-snug font-semibold text-white sm:grid-cols-2 print:fixed print:inset-x-0 print:bottom-0" data-letterhead>
+            <footer class="relative grid min-h-[24mm] gap-2 bg-[#2E3192] px-[5%] py-3 text-xs leading-snug font-semibold text-white sm:grid-cols-2 print:fixed print:inset-x-0 print:bottom-0" data-letterhead>
                 <div>
                     @if ($contact['address']) <p class="whitespace-pre-line">{{ $contact['address'] }}</p> @endif
                 </div>
