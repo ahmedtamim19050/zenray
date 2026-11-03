@@ -4,7 +4,7 @@
 
     Invoices use a letterhead: header, footer and watermark on plain paper,
     or only the content (onPad) when printing on the pre-printed company pad.
-    Both share the same positions, so the content lands in the same place.
+    On the pad, the number and date line up with the pad's printed Ref and Date.
     When printing, the letterhead is fixed so it repeats on every page, and the
     outer table's empty head and foot keep the content clear of it.
 --}}
@@ -16,6 +16,11 @@
     $billing = config('zenray.billing');
     $facebook = config('zenray.social.facebook');
     [$stateLabel] = $document->state();
+    $invoiceDetails = $isQuote ? [] : array_filter([
+        'Due date' => $document->due_date?->format('j M Y'),
+        'Quote ref.' => $document->quote?->number,
+        $billing['tax_label'].' no.' => $billing['tax_number'],
+    ]);
     $stamp = match (true) {
         $document->status === 'void' => ['VOID', 'text-red-600 border-red-600'],
         $document->status === 'draft' => ['DRAFT', 'text-slate-400 border-slate-400'],
@@ -37,40 +42,49 @@
         @endunless
 
         <div class="relative shrink-0 print:fixed print:inset-x-0 print:top-0">
-            <div class="h-[24mm]">
-                @unless ($onPad)
-                    <div class="flex h-full items-center justify-center gap-3 border-b border-navy-800 px-4 sm:gap-4" data-letterhead>
-                        <img src="{{ asset('images/zenray-mark.svg') }}" alt="" width="160" height="112" class="h-[13mm] w-auto">
-                        <div>
-                            <p class="font-serif text-lg leading-tight font-bold tracking-wide text-navy-800 uppercase sm:text-3xl">{{ config('zenray.name') }}</p>
-                            <p class="text-[0.6875rem] leading-tight font-medium text-slate-700 sm:text-xs">{{ config('zenray.tagline') }}</p>
+            @if ($onPad)
+                <div class="h-[24mm]"></div>
+                <div class="relative h-[10mm] text-xs">
+                    <span class="absolute top-[3.5mm] left-[13%] font-mono font-semibold text-navy-900 sm:left-[16%]">{{ $document->number }}</span>
+                    <span class="absolute top-[3.5mm] left-[76%] font-semibold text-navy-900">{{ $document->issue_date->format('d/m/Y') }}</span>
+                </div>
+            @else
+                <div data-letterhead>
+                    <div class="h-1.5 bg-linear-to-r from-navy-800 via-navy-700 to-signal-500"></div>
+                    <div class="flex flex-wrap items-center justify-between gap-4 px-6 pt-8 pb-6 sm:px-[7%]">
+                        <div class="flex items-center gap-4">
+                            <img src="{{ asset('images/zenray-mark.svg') }}" alt="" width="160" height="112" class="h-[15mm] w-auto">
+                            <div>
+                                <p class="text-xl leading-tight font-bold tracking-tight text-navy-800 sm:text-2xl">{{ config('zenray.name') }}</p>
+                                <p class="mt-1 text-xs leading-tight text-slate-500">{{ config('zenray.tagline') }}</p>
+                            </div>
                         </div>
+                        <h1 class="text-3xl font-light tracking-[0.18em] text-navy-800 uppercase sm:text-4xl">Invoice</h1>
                     </div>
-                @endunless
-            </div>
-            <div class="relative h-[10mm] text-xs">
-                @unless ($onPad)
-                    <span class="absolute top-[3.5mm] left-[8%] text-slate-600 italic sm:left-[12%]">Ref:</span>
-                    <span class="absolute top-[3.5mm] left-[69.5%] text-slate-600 italic">Date:</span>
-                    <span class="absolute top-[7.5mm] left-[75%] w-[16%] border-b border-dotted border-slate-500"></span>
-                @endunless
-                <span class="absolute top-[3.5mm] left-[13%] font-mono font-semibold text-navy-900 sm:left-[16%]">{{ $document->number }}</span>
-                <span class="absolute top-[3.5mm] left-[76%] font-semibold text-navy-900">{{ $document->issue_date->format('d/m/Y') }}</span>
-            </div>
+                    <dl class="flex flex-wrap gap-x-10 gap-y-3 border-y border-navy-100 bg-slate-50/70 px-6 py-3 sm:px-[7%]">
+                        @foreach (['Invoice no.' => $document->number, 'Date' => $document->issue_date->format('j M Y')] + $invoiceDetails as $label => $value)
+                            <div>
+                                <dt class="text-[0.625rem] font-semibold tracking-widest text-slate-500 uppercase">{{ $label }}</dt>
+                                <dd class="mt-0.5 text-sm font-semibold text-navy-900">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
+            @endif
         </div>
     @endif
 
     @if ($stamp)
-        <span class="pointer-events-none absolute top-40 right-10 rotate-[-14deg] rounded-lg border-4 px-4 py-1 font-mono text-4xl font-bold tracking-widest opacity-25 {{ $stamp[1] }}" aria-hidden="true">{{ $stamp[0] }}</span>
+        <span class="pointer-events-none absolute {{ $isQuote ? 'top-40' : 'top-64' }} right-10 rotate-[-14deg] rounded-lg border-4 px-4 py-1 font-mono text-4xl font-bold tracking-widest opacity-25 {{ $stamp[1] }}" aria-hidden="true">{{ $stamp[0] }}</span>
     @endif
 
     @unless ($isQuote)
         <table class="relative w-full table-fixed" role="presentation">
-            <thead class="hidden print:table-header-group"><tr><td class="h-[36mm]"></td></tr></thead>
+            <thead class="hidden print:table-header-group"><tr><td @class(['h-[36mm]' => $onPad, 'h-[54mm]' => ! $onPad])></td></tr></thead>
             <tbody><tr><td>
     @endunless
 
-    <div @class(['relative', 'p-8 sm:p-12' => $isQuote, 'px-6 py-4 sm:px-[7%] print:py-0' => ! $isQuote])>
+    <div @class(['relative', 'p-8 sm:p-12' => $isQuote, 'px-6 pt-8 pb-4 sm:px-[7%] print:py-0' => ! $isQuote && ! $onPad, 'px-6 py-4 sm:px-[7%] print:py-0' => ! $isQuote && $onPad])>
         {{-- Header --}}
         @if ($isQuote)
             <header class="flex flex-col justify-between gap-8 sm:flex-row">
@@ -95,26 +109,19 @@
                     </dl>
                 </div>
             </header>
-        @else
+        @elseif ($onPad)
             <header class="flex flex-wrap items-start justify-between gap-4">
                 <h1 class="text-2xl font-bold tracking-tight text-navy-900 uppercase">Invoice</h1>
                 <dl class="grid grid-cols-[auto_auto] gap-x-6 gap-y-1 text-xs">
-                    @if ($document->due_date)
-                        <dt class="text-slate-500">Due date</dt><dd class="font-semibold text-navy-900">{{ $document->due_date->format('j M Y') }}</dd>
-                    @endif
-                    @if ($document->quote)
-                        <dt class="text-slate-500">Quote ref.</dt><dd class="font-semibold text-navy-900">{{ $document->quote->number }}</dd>
-                    @endif
-                    <dt class="text-slate-500">Status</dt><dd class="font-semibold text-navy-900">{{ $stateLabel }}</dd>
-                    @if ($billing['tax_number'])
-                        <dt class="text-slate-500">{{ $billing['tax_label'] }} no.</dt><dd class="font-semibold text-navy-900">{{ $billing['tax_number'] }}</dd>
-                    @endif
+                    @foreach ($invoiceDetails as $label => $value)
+                        <dt class="text-slate-500">{{ $label }}</dt><dd class="font-semibold text-navy-900">{{ $value }}</dd>
+                    @endforeach
                 </dl>
             </header>
         @endif
 
         {{-- Parties --}}
-        <div @class(['grid gap-6 rounded-xl bg-slate-50/60 p-5 sm:grid-cols-2', 'mt-10' => $isQuote, 'mt-5' => ! $isQuote])>
+        <div @class(['grid gap-6 rounded-xl bg-slate-50/60 p-5 sm:grid-cols-2', 'mt-10' => $isQuote, 'mt-5' => ! $isQuote && $onPad])>
             <div>
                 <p class="text-[0.6875rem] font-semibold tracking-widest text-slate-400 uppercase">{{ $isQuote ? 'Prepared for' : 'Bill to' }}</p>
                 <p class="mt-1.5 font-bold text-navy-900">{{ $document->customer_name }}</p>
@@ -165,6 +172,9 @@
                 @endif
                 <div class="flex justify-between"><dt class="text-slate-500">{{ $billing['tax_label'] }} ({{ (float) $document->tax_rate }}%)</dt><dd>{{ $document->money('tax_total') }}</dd></div>
                 <div class="flex justify-between border-t-2 border-navy-800 pt-2 text-base font-bold text-navy-900"><dt>Total</dt><dd>{{ $document->money('total') }}</dd></div>
+                @if (! $isQuote && (float) $document->amount_paid > 0)
+                    <div class="flex justify-between font-semibold text-navy-900"><dt>Paid</dt><dd>{{ $document->money('amount_paid') }}</dd></div>
+                @endif
             </dl>
         </div>
 

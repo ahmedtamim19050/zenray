@@ -250,12 +250,15 @@ test('the invoice footer shows the contact details from settings, except on the 
         ->assertDontSee('House 45, Dhaka-1207');
 });
 
-test('printed invoices leave out balance, notes and terms and have a signature line', function (string $query) {
+test('printed invoices show the paid amount but no balance, status, notes or terms, and have a signature line', function (string $query) {
     $invoice = customerInvoice(User::factory()->create(), ['notes' => 'Invoice note text', 'terms' => 'Invoice terms text']);
     $invoice->recordPayment(['amount' => 2000, 'paid_on' => today()->toDateString(), 'method' => 'cash']);
 
     $this->actingAs(salesAdmin())->get("/admin/invoices/{$invoice->number}/print{$query}")->assertOk()
         ->assertSee('Authorized signature')
+        ->assertSee('৳2,000.00')
+        ->assertDontSee('Status')
+        ->assertDontSee('Partially paid')
         ->assertDontSee('Balance due')
         ->assertDontSee('Invoice note text')
         ->assertDontSee('Invoice terms text');
