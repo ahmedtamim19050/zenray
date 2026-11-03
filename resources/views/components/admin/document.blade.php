@@ -165,6 +165,7 @@
                 <div class="flex justify-between border-t-2 border-navy-800 pt-2 text-base font-bold text-navy-900"><dt>Total</dt><dd>{{ $document->money('total') }}</dd></div>
                 @if (! $isQuote && (float) $document->amount_paid > 0)
                     <div class="flex justify-between font-semibold text-navy-900"><dt>Paid</dt><dd>{{ $document->money('amount_paid') }}</dd></div>
+                    <div class="flex justify-between border-t-2 border-navy-800 pt-2 text-base font-bold text-navy-900"><dt>Amount due</dt><dd>{{ \App\Support\Money::format($document->balance(), $document->currency) }}</dd></div>
                 @endif
             </dl>
         </div>
