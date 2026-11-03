@@ -56,6 +56,7 @@
                             <th scope="col" class="px-6 py-3 text-right">Total</th>
                             <th scope="col" class="px-6 py-3 text-right">Balance</th>
                             <th scope="col" class="px-6 py-3">Status</th>
+                            <th scope="col" class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-navy-50">
@@ -71,6 +72,11 @@
                                 <td class="px-6 py-4 text-right whitespace-nowrap text-slate-600 tabular-nums">{{ $invoice->money('total') }}</td>
                                 <td class="px-6 py-4 text-right font-semibold whitespace-nowrap text-navy-900 tabular-nums">{{ $invoice->status === 'issued' ? \App\Support\Money::format($invoice->balance(), $invoice->currency) : '—' }}</td>
                                 <td class="px-6 py-4"><x-admin.badge :state="$invoice->state()" /></td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <a href="{{ route('admin.invoices.show', $invoice) }}" class="font-semibold text-navy-800 hover:text-signal-700">View<span class="sr-only"> invoice {{ $invoice->number }}</span></a>
+                                    <a href="{{ route('admin.invoices.print', $invoice) }}" target="_blank" rel="noopener" class="ml-3 font-semibold text-navy-800 hover:text-signal-700">Print<span class="sr-only"> invoice {{ $invoice->number }}</span></a>
+                                    <a href="{{ route('admin.invoices.print', [$invoice, 'pad' => 1]) }}" target="_blank" rel="noopener" class="ml-3 font-semibold text-navy-800 hover:text-signal-700">On pad<span class="sr-only"> invoice {{ $invoice->number }}</span></a>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

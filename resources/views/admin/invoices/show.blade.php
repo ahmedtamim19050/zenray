@@ -10,6 +10,7 @@
     </x-slot:subtitle>
     <x-slot:actions>
         <x-button :href="route('admin.invoices.print', $invoice)" variant="outline" size="sm" target="_blank" rel="noopener"><x-icon name="document" class="size-4" /> Print / PDF</x-button>
+        <x-button :href="route('admin.invoices.print', [$invoice, 'pad' => 1])" variant="outline" size="sm" target="_blank" rel="noopener"><x-icon name="document" class="size-4" /> Print on pad</x-button>
         @if ($invoice->isEditable())
             <x-button :href="route('admin.invoices.edit', $invoice)" variant="navy" size="sm">Edit invoice</x-button>
         @endif

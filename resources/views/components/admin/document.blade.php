@@ -1,13 +1,20 @@
 {{--
     A quotation or invoice laid out as a printable A4 document.
     Used on the admin detail pages and the print / save-as-PDF view.
+
+    Invoices use a letterhead: header, footer and watermark on plain paper,
+    or only the content (onPad) when printing on the pre-printed company pad.
+    Both share the same positions, so the content lands in the same place.
+    When printing, the letterhead is fixed so it repeats on every page, and the
+    outer table's empty head and foot keep the content clear of it.
 --}}
-@props(['document', 'type'])
+@props(['document', 'type', 'onPad' => false])
 
 @php
     $isQuote = $type === 'quote';
     $contact = config('zenray.contact');
     $billing = config('zenray.billing');
+    $facebook = config('zenray.social.facebook');
     [$stateLabel] = $document->state();
     $stamp = match (true) {
         ! $isQuote && $document->isPaid() => ['PAID', 'text-emerald-600 border-emerald-600'],
@@ -17,50 +24,98 @@
     };
 @endphp
 
-<article {{ $attributes->class('doc-paper relative mx-auto w-full max-w-[52rem] overflow-hidden bg-white text-[0.875rem] leading-relaxed text-slate-700') }}>
-    <div class="h-2 bg-linear-to-r from-navy-800 via-navy-700 to-signal-500" aria-hidden="true"></div>
+<article {{ $attributes->class(['doc-paper relative mx-auto w-full overflow-hidden bg-white text-[0.875rem] leading-relaxed text-slate-700', 'max-w-[52rem]' => $isQuote, 'flex max-w-[210mm] flex-col sm:min-h-[297mm] print:block print:min-h-0' => ! $isQuote]) }}>
+    @if ($isQuote)
+        <div class="h-2 bg-linear-to-r from-navy-800 via-navy-700 to-signal-500" aria-hidden="true"></div>
+    @else
+        {{-- Images rather than CSS backgrounds, because browsers skip backgrounds when printing. --}}
+        @unless ($onPad)
+            <div class="pointer-events-none absolute top-1/2 left-1/2 flex w-3/5 -translate-x-1/2 -translate-y-1/2 flex-col items-center select-none print:fixed" aria-hidden="true" data-watermark>
+                <img src="{{ asset('images/zenray-mark.svg') }}" alt="" width="160" height="112" class="w-3/5 opacity-[0.12]">
+                <p class="mt-2 text-center text-3xl font-bold tracking-wider whitespace-nowrap text-navy-800 uppercase opacity-[0.12]">{{ config('zenray.name') }}</p>
+                <img src="{{ asset('images/photos/room-overview-800.webp') }}" alt="" width="800" height="600" class="mt-4 w-full opacity-[0.3] mix-blend-multiply brightness-[1.35] contrast-[1.5] grayscale [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_72%)]">
+            </div>
+        @endunless
 
-    {{-- An img rather than a CSS background, because browsers skip backgrounds when printing. --}}
-    @unless ($isQuote)
-        <img src="{{ asset('images/zenray-mark.svg') }}" alt="" width="160" height="112" class="pointer-events-none absolute top-1/2 left-1/2 w-3/5 max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.12] select-none" aria-hidden="true" data-watermark>
-    @endunless
+        <div class="relative shrink-0 print:fixed print:inset-x-0 print:top-0">
+            <div class="h-[24mm]">
+                @unless ($onPad)
+                    <div class="flex h-full items-center justify-center gap-3 border-b border-navy-800 px-4 sm:gap-4" data-letterhead>
+                        <img src="{{ asset('images/zenray-mark.svg') }}" alt="" width="160" height="112" class="h-[13mm] w-auto">
+                        <div>
+                            <p class="font-serif text-lg leading-tight font-bold tracking-wide text-navy-800 uppercase sm:text-3xl">{{ config('zenray.name') }}</p>
+                            <p class="text-[0.6875rem] leading-tight font-medium text-slate-700 sm:text-xs">{{ config('zenray.tagline') }}</p>
+                        </div>
+                    </div>
+                @endunless
+            </div>
+            <div class="relative h-[10mm] text-xs">
+                @unless ($onPad)
+                    <span class="absolute top-[3.5mm] left-[8%] text-slate-600 italic sm:left-[12%]">Ref:</span>
+                    <span class="absolute top-[3.5mm] left-[69.5%] text-slate-600 italic">Date:</span>
+                    <span class="absolute top-[7.5mm] left-[75%] w-[16%] border-b border-dotted border-slate-500"></span>
+                @endunless
+                <span class="absolute top-[3.5mm] left-[13%] font-mono font-semibold text-navy-900 sm:left-[16%]">{{ $document->number }}</span>
+                <span class="absolute top-[3.5mm] left-[76%] font-semibold text-navy-900">{{ $document->issue_date->format('d/m/Y') }}</span>
+            </div>
+        </div>
+    @endif
 
     @if ($stamp)
         <span class="pointer-events-none absolute top-40 right-10 rotate-[-14deg] rounded-lg border-4 px-4 py-1 font-mono text-4xl font-bold tracking-widest opacity-25 {{ $stamp[1] }}" aria-hidden="true">{{ $stamp[0] }}</span>
     @endif
 
-    <div class="relative p-8 sm:p-12">
+    @unless ($isQuote)
+        <table class="relative w-full table-fixed" role="presentation">
+            <thead class="hidden print:table-header-group"><tr><td class="h-[36mm]"></td></tr></thead>
+            <tbody><tr><td>
+    @endunless
+
+    <div @class(['relative', 'p-8 sm:p-12' => $isQuote, 'px-6 py-4 sm:px-[7%] print:py-0' => ! $isQuote])>
         {{-- Header --}}
-        <header class="flex flex-col justify-between gap-8 sm:flex-row">
-            <div>
-                <img src="{{ asset('images/zenray-logo.svg') }}" alt="{{ config('zenray.name') }}" width="486" height="124" class="h-12 w-auto">
-                <div class="mt-5 space-y-0.5 text-xs text-slate-500">
-                    @if ($contact['address']) <p class="whitespace-pre-line">{{ $contact['address'] }}</p> @endif
-                    @if ($contact['phone']) <p>{{ $contact['phone'] }}</p> @endif
-                    @if ($contact['email']) <p>{{ $contact['email'] }}</p> @endif
-                    @if ($billing['tax_number']) <p>{{ $billing['tax_label'] }} no. {{ $billing['tax_number'] }}</p> @endif
+        @if ($isQuote)
+            <header class="flex flex-col justify-between gap-8 sm:flex-row">
+                <div>
+                    <img src="{{ asset('images/zenray-logo.svg') }}" alt="{{ config('zenray.name') }}" width="486" height="124" class="h-12 w-auto">
+                    <div class="mt-5 space-y-0.5 text-xs text-slate-500">
+                        @if ($contact['address']) <p class="whitespace-pre-line">{{ $contact['address'] }}</p> @endif
+                        @if ($contact['phone']) <p>{{ $contact['phone'] }}</p> @endif
+                        @if ($contact['email']) <p>{{ $contact['email'] }}</p> @endif
+                        @if ($billing['tax_number']) <p>{{ $billing['tax_label'] }} no. {{ $billing['tax_number'] }}</p> @endif
+                    </div>
                 </div>
-            </div>
-            <div class="sm:text-right">
-                <h1 class="text-3xl font-bold tracking-tight text-navy-900 uppercase">{{ $isQuote ? 'Quotation' : 'Invoice' }}</h1>
-                <p class="mt-1 font-mono text-base font-semibold text-navy-700">{{ $document->number }}</p>
-                <dl class="mt-4 grid grid-cols-[auto_auto] justify-start gap-x-6 gap-y-1 text-xs sm:justify-end">
-                    <dt class="text-slate-500">Date</dt><dd class="font-semibold text-navy-900">{{ $document->issue_date->format('j M Y') }}</dd>
-                    @if ($isQuote && $document->valid_until)
-                        <dt class="text-slate-500">Valid until</dt><dd class="font-semibold text-navy-900">{{ $document->valid_until->format('j M Y') }}</dd>
-                    @elseif (! $isQuote && $document->due_date)
+                <div class="sm:text-right">
+                    <h1 class="text-3xl font-bold tracking-tight text-navy-900 uppercase">Quotation</h1>
+                    <p class="mt-1 font-mono text-base font-semibold text-navy-700">{{ $document->number }}</p>
+                    <dl class="mt-4 grid grid-cols-[auto_auto] justify-start gap-x-6 gap-y-1 text-xs sm:justify-end">
+                        <dt class="text-slate-500">Date</dt><dd class="font-semibold text-navy-900">{{ $document->issue_date->format('j M Y') }}</dd>
+                        @if ($document->valid_until)
+                            <dt class="text-slate-500">Valid until</dt><dd class="font-semibold text-navy-900">{{ $document->valid_until->format('j M Y') }}</dd>
+                        @endif
+                        <dt class="text-slate-500">Status</dt><dd class="font-semibold text-navy-900">{{ $stateLabel }}</dd>
+                    </dl>
+                </div>
+            </header>
+        @else
+            <header class="flex flex-wrap items-start justify-between gap-4">
+                <h1 class="text-2xl font-bold tracking-tight text-navy-900 uppercase">Invoice</h1>
+                <dl class="grid grid-cols-[auto_auto] gap-x-6 gap-y-1 text-xs">
+                    @if ($document->due_date)
                         <dt class="text-slate-500">Due date</dt><dd class="font-semibold text-navy-900">{{ $document->due_date->format('j M Y') }}</dd>
                     @endif
-                    @if (! $isQuote && $document->quote)
+                    @if ($document->quote)
                         <dt class="text-slate-500">Quote ref.</dt><dd class="font-semibold text-navy-900">{{ $document->quote->number }}</dd>
                     @endif
                     <dt class="text-slate-500">Status</dt><dd class="font-semibold text-navy-900">{{ $stateLabel }}</dd>
+                    @if ($billing['tax_number'])
+                        <dt class="text-slate-500">{{ $billing['tax_label'] }} no.</dt><dd class="font-semibold text-navy-900">{{ $billing['tax_number'] }}</dd>
+                    @endif
                 </dl>
-            </div>
-        </header>
+            </header>
+        @endif
 
         {{-- Parties --}}
-        <div class="mt-10 grid gap-6 rounded-xl bg-slate-50/60 p-5 sm:grid-cols-2">
+        <div @class(['grid gap-6 rounded-xl bg-slate-50/60 p-5 sm:grid-cols-2', 'mt-10' => $isQuote, 'mt-5' => ! $isQuote])>
             <div>
                 <p class="text-[0.6875rem] font-semibold tracking-widest text-slate-400 uppercase">{{ $isQuote ? 'Prepared for' : 'Bill to' }}</p>
                 <p class="mt-1.5 font-bold text-navy-900">{{ $document->customer_name }}</p>
@@ -79,7 +134,7 @@
         </div>
 
         {{-- Items --}}
-        <table class="mt-10 w-full text-left">
+        <table @class(['w-full text-left', 'mt-10' => $isQuote, 'mt-6' => ! $isQuote])>
             <thead>
                 <tr class="border-b-2 border-navy-800 text-[0.6875rem] font-semibold tracking-widest text-navy-800 uppercase">
                     <th scope="col" class="w-8 py-2 pr-2">#</th>
@@ -141,9 +196,30 @@
             @endif
         </div>
 
-        <footer class="mt-10 flex items-center justify-between gap-4 border-t border-slate-200 pt-4 text-[0.6875rem] text-slate-400">
-            <p>{{ config('zenray.name') }} · {{ config('zenray.tagline') }}</p>
-            <p class="font-mono">{{ $document->number }}</p>
-        </footer>
+        @if ($isQuote)
+            <footer class="mt-10 flex items-center justify-between gap-4 border-t border-slate-200 pt-4 text-[0.6875rem] text-slate-400">
+                <p>{{ config('zenray.name') }} · {{ config('zenray.tagline') }}</p>
+                <p class="font-mono">{{ $document->number }}</p>
+            </footer>
+        @endif
     </div>
+
+    @unless ($isQuote)
+            </td></tr></tbody>
+            <tfoot class="hidden print:table-footer-group"><tr><td class="h-[28mm]"></td></tr></tfoot>
+        </table>
+
+        @unless ($onPad)
+            <footer class="relative mt-auto flex min-h-[24mm] flex-col justify-between gap-2 bg-navy-800 px-6 py-3 text-xs leading-snug font-medium text-white sm:flex-row sm:items-center sm:gap-8 sm:px-[7%] print:fixed print:inset-x-0 print:bottom-0" data-letterhead>
+                <div>
+                    @if ($contact['address']) <p class="whitespace-pre-line">{{ $contact['address'] }}</p> @endif
+                </div>
+                <div class="space-y-0.5">
+                    @if ($contact['phone']) <p>Mobile : {{ $contact['phone'] }}</p> @endif
+                    @if ($contact['email']) <p>E-mail : {{ $contact['email'] }}</p> @endif
+                    @if ($facebook) <p>Fb : {{ preg_replace('#^https?://#', '', $facebook) }}</p> @endif
+                </div>
+            </footer>
+        @endunless
+    @endunless
 </article>

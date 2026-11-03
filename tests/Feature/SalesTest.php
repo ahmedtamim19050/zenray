@@ -218,6 +218,40 @@ test('invoices carry the logo watermark for admins and customers, quotes do not'
     $this->actingAs($admin)->get('/admin/quotes/'.Quote::firstOrFail()->number.'/print')->assertOk()->assertDontSee('data-watermark', false);
 });
 
+test('admins print invoices with the letterhead on plain paper, or content only on the pad', function () {
+    $invoice = customerInvoice(User::factory()->create());
+    $admin = salesAdmin();
+
+    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}/print")->assertOk()
+        ->assertSee('data-letterhead', false)
+        ->assertSee('data-watermark', false)
+        ->assertSee($invoice->number);
+
+    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}/print?pad=1")->assertOk()
+        ->assertDontSee('data-letterhead', false)
+        ->assertDontSee('data-watermark', false)
+        ->assertSee($invoice->number)
+        ->assertSee($invoice->issue_date->format('d/m/Y'));
+});
+
+test('customers always get the full letterhead and no pad option', function () {
+    $customer = User::factory()->create();
+    $invoice = customerInvoice($customer);
+
+    $this->actingAs($customer)->get("/dashboard/invoices/{$invoice->number}/print?pad=1")->assertOk()
+        ->assertSee('data-letterhead', false)
+        ->assertDontSee('With pad');
+});
+
+test('the invoice list links to viewing and both print versions', function () {
+    $invoice = customerInvoice(User::factory()->create());
+
+    $this->actingAs(salesAdmin())->get('/admin/invoices')->assertOk()
+        ->assertSee(route('admin.invoices.show', $invoice), false)
+        ->assertSee(route('admin.invoices.print', $invoice), false)
+        ->assertSee(route('admin.invoices.print', [$invoice, 'pad' => 1]), false);
+});
+
 test('the customer dashboard counts unpaid and overdue invoices', function () {
     $customer = User::factory()->create();
     customerInvoice($customer);

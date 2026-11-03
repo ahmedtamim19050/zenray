@@ -131,9 +131,14 @@ class InvoiceController extends Controller
         return back()->with('status', "Invoice {$invoice->number} voided. Any sold stock has been returned to inventory.");
     }
 
-    public function print(Invoice $invoice): View
+    public function print(Request $request, Invoice $invoice): View
     {
-        return view('admin.documents.print', ['document' => $invoice->load(['items', 'payments']), 'type' => 'invoice']);
+        return view('admin.documents.print', [
+            'document' => $invoice->load(['items', 'payments']),
+            'type' => 'invoice',
+            'padToggle' => true,
+            'onPad' => $request->boolean('pad'),
+        ]);
     }
 
     public function export(Request $request): StreamedResponse
