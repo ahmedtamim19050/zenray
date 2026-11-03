@@ -17,7 +17,6 @@
     $facebook = config('zenray.social.facebook');
     [$stateLabel] = $document->state();
     $invoiceDetails = $isQuote ? [] : array_filter([
-        'Due date' => $document->due_date?->format('j M Y'),
         'Quote ref.' => $document->quote?->number,
         $billing['tax_label'].' no.' => $billing['tax_number'],
     ]);

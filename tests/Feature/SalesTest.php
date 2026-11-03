@@ -260,6 +260,7 @@ test('printed invoices show the paid and remaining amounts but no status, notes 
         ->assertSeeInOrder(['Paid', 'Amount due', '৳3,000.00'])
         ->assertDontSee('Status')
         ->assertDontSee('Partially paid')
+        ->assertDontSee('Due date')
         ->assertDontSee('Balance due')
         ->assertDontSee('Invoice note text')
         ->assertDontSee('Invoice terms text');
