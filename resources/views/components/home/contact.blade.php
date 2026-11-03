@@ -1,6 +1,12 @@
 {{-- Bold CTA band + contact section with the working enquiry form --}}
 @php
     $contact = config('zenray.contact');
+    $contactRows = array_filter([
+        ['phone', 'Call us', $contact['phone'], $contact['phone'] ? 'tel:'.preg_replace('/[^\d+]/', '', $contact['phone']) : null],
+        ['mail', 'Email us', $contact['email'], $contact['email'] ? 'mailto:'.$contact['email'] : null],
+        ['map-pin', 'Visit us', $contact['address'], $contact['map_url'] ?? null],
+        ['clock', 'Business hours', $contact['hours'], null],
+    ], fn (array $row) => filled($row[2]));
     $steps = [
         ['title' => 'Tell us what you need', 'text' => 'Send the form, even if you are not sure of exact product names.'],
         ['title' => 'Discuss your options', 'text' => 'Our team talks through suitable equipment and services with you.'],
@@ -9,71 +15,70 @@
 @endphp
 
 {{-- CTA band --}}
-<section class="relative isolate overflow-hidden bg-signal-500" aria-labelledby="cta-heading">
-    <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-        <div class="absolute -top-24 -right-10 size-96 rounded-full bg-signal-300/60 blur-3xl"></div>
-        <img src="{{ asset('images/zenray-mark.svg') }}" alt="" width="160" height="112" loading="lazy" class="absolute -right-10 -bottom-16 w-[28rem] opacity-[0.12] brightness-0">
-    </div>
-    <div class="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+<section class="bg-navy-800" aria-labelledby="cta-heading">
+    <div class="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div class="max-w-2xl">
-            <h2 id="cta-heading" data-split class="text-[2.25rem] leading-[1.04] font-bold tracking-[-0.035em] text-balance text-navy-950 sm:text-5xl">
+            <h2 id="cta-heading" data-reveal class="text-2xl leading-tight font-semibold tracking-tight text-balance text-white sm:text-3xl">
                 Looking for the Right Imaging Solution?
             </h2>
-            <p class="mt-4 text-lg text-navy-900/80">Tell us what your facility needs, and our team can discuss the available options with you.</p>
+            <p class="mt-4 text-lg text-navy-100">Tell us what your facility needs, and our team can discuss the available options with you.</p>
         </div>
         <div class="flex shrink-0 flex-col gap-3 sm:flex-row" data-reveal>
-            <x-button href="#enquiry" variant="glow" size="lg" icon="arrow-right" class="btn-shine">Request a Quote</x-button>
-            <x-button :href="route('contact')" variant="outline" size="lg" class="border-navy-950/20 bg-white/30 hover:bg-film-800">Contact Our Team</x-button>
+            <x-button href="#enquiry" size="lg" icon="arrow-right">Request a Quote</x-button>
+            <x-button :href="route('contact')" variant="outline-light" size="lg">Contact Our Team</x-button>
         </div>
     </div>
 </section>
 
-{{-- Contact + form --}}
-<section id="contact" class="relative isolate scroll-mt-24 bg-film-900 py-24 sm:py-32" aria-labelledby="contact-heading">
-    <div class="bg-grid-dark pointer-events-none absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black,transparent_50%)]" aria-hidden="true"></div>
+{{-- Contact panel: navy photo side with the details and next steps, joined to the form --}}
+<section id="contact" class="scroll-mt-24 bg-film-900 py-16 sm:py-24" aria-labelledby="contact-heading">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid overflow-hidden rounded-3xl bg-film-800 shadow-card-hover ring-1 ring-film-600 lg:grid-cols-12" data-reveal>
+            <div class="relative isolate flex flex-col bg-navy-800 p-7 text-white sm:p-10 lg:col-span-5">
+                <x-photo name="room-overview" alt="" sizes="(min-width: 1024px) 500px, 100vw" class="absolute inset-0 -z-20 opacity-50 mix-blend-luminosity" />
+                <span class="absolute inset-0 -z-10 bg-linear-to-b from-navy-800/85 via-navy-800/55 via-45% to-navy-900" aria-hidden="true"></span>
 
-    <div class="mx-auto grid max-w-7xl gap-14 px-4 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:px-8">
-        <div class="lg:col-span-5">
-            <x-section-heading dark id="contact-heading" eyebrow="Get in touch" title="Let’s talk about your facility">
-                <x-slot:description>
-                    No technical knowledge needed. Tell us what you are looking for and we will take it from there.
-                </x-slot:description>
-            </x-section-heading>
+                <p class="text-sm font-semibold text-signal-300">Get in touch</p>
+                <h2 id="contact-heading" class="mt-3 text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl">Let’s talk about your facility</h2>
+                <p class="mt-4 text-base leading-relaxed text-navy-100">No technical knowledge needed. Tell us what you are looking for and we will take it from there.</p>
 
-            <ul class="mt-10 space-y-3" data-stagger>
-                @foreach ([['phone', 'Call us', $contact['phone'], $contact['phone'] ? 'tel:'.preg_replace('/[^\d+]/', '', $contact['phone']) : null], ['mail', 'Email us', $contact['email'], $contact['email'] ? 'mailto:'.$contact['email'] : null], ['map-pin', 'Visit us', $contact['address'], null], ['clock', 'Business hours', $contact['hours'], null]] as [$icon, $label, $value, $link])
-                    <li class="flex items-center gap-4 rounded-2xl bg-film-800 p-4 ring-1 ring-film-600">
-                        <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-glow-400/10 text-glow-300 ring-1 ring-glow-400/25">
-                            <x-icon :name="$icon" class="size-5" />
-                        </span>
-                        <span class="min-w-0">
-                            <span class="block text-xs font-semibold tracking-wide text-ink-3 uppercase">{{ $label }}</span>
-                            @if ($value && $link)
-                                <a href="{{ $link }}" class="block truncate text-lg font-bold text-ink hover:text-signal-300">{{ $value }}</a>
-                            @elseif ($value)
-                                <span class="block text-lg font-bold text-ink">{{ $value }}</span>
-                            @else
-                                <span class="block text-[0.9375rem] text-ink-3 italic">Pending configuration</span>
-                            @endif
-                        </span>
-                    </li>
-                @endforeach
-            </ul>
+                {{-- Only the details set in Admin → Settings are shown --}}
+                @if ($contactRows)
+                    <ul class="mt-8 space-y-4">
+                        @foreach ($contactRows as [$icon, $label, $value, $link])
+                            <li>
+                                <{{ $link ? 'a href='.$link : 'div' }} class="group flex items-center gap-3.5">
+                                    <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-signal-300 ring-1 ring-white/20 transition-colors duration-300 group-hover:bg-signal-500 group-hover:text-navy-950">
+                                        <x-icon :name="$icon" class="size-5" />
+                                    </span>
+                                    <span class="min-w-0 break-words">
+                                        <span class="block text-sm text-navy-200">{{ $label }}</span>
+                                        <span class="font-semibold"><span @class(['link-draw' => $link])>{{ $value }}</span></span>
+                                    </span>
+                                </{{ $link ? 'a' : 'div' }}>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
 
-            <ol class="mt-10 space-y-6 border-l-2 border-film-600 pl-6" aria-label="What happens next">
-                @foreach ($steps as $step)
-                    <li class="relative">
-                        <span class="absolute top-0 -left-[2.35rem] flex size-6 items-center justify-center rounded-full bg-signal-500 font-mono text-xs font-bold text-navy-950 ring-4 ring-film-900">{{ $loop->iteration }}</span>
-                        <p class="font-bold text-ink">{{ $step['title'] }}</p>
-                        <p class="mt-1 text-[0.9375rem] text-ink-2">{{ $step['text'] }}</p>
-                    </li>
-                @endforeach
-            </ol>
-        </div>
+                <div class="mt-auto pt-10">
+                    <h3 class="text-sm font-semibold text-navy-100">What happens next</h3>
+                    <ol class="mt-4 space-y-4">
+                        @foreach ($steps as $step)
+                            <li class="flex gap-3.5">
+                                <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-signal-500 text-sm font-semibold text-navy-950">{{ $loop->iteration }}</span>
+                                <span>
+                                    <span class="block font-semibold">{{ $step['title'] }}</span>
+                                    <span class="mt-0.5 block text-sm leading-relaxed text-navy-100">{{ $step['text'] }}</span>
+                                </span>
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+            </div>
 
-        <div id="enquiry" class="scroll-mt-24 lg:col-span-7" data-reveal>
-            <div class="border-glow rounded-[1.25rem]">
-                <x-enquiry-form type="quote" />
+            <div id="enquiry" class="scroll-mt-24 p-6 sm:p-10 lg:col-span-7 lg:p-12">
+                <x-enquiry-form type="quote" title="Send us your request" bare />
             </div>
         </div>
     </div>

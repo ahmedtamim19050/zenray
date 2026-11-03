@@ -2,7 +2,7 @@
     <x-slot:subtitle>Stock on hand, value and reorder alerts. Issued invoices take stock out automatically.</x-slot:subtitle>
     <x-slot:actions>
         <x-button :href="route('admin.inventory.export', array_filter(['stock' => $filter, 'q' => $search]))" variant="outline" size="sm">Export CSV</x-button>
-        <x-button :href="route('admin.inventory.create')" size="sm" class="btn-shine"><span aria-hidden="true">+</span> Add item</x-button>
+        <x-button :href="route('admin.inventory.create')" size="sm" ><span aria-hidden="true">+</span> Add item</x-button>
     </x-slot:actions>
 
     <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

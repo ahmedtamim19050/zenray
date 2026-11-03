@@ -15,7 +15,7 @@
             By creating an account you agree to our <a href="{{ route('terms') }}" class="underline underline-offset-2">Terms</a>
             and <a href="{{ route('privacy') }}" class="underline underline-offset-2">Privacy Policy</a>.
         </p>
-        <button type="submit" class="btn-shine inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-signal-500 font-semibold text-navy-950 transition hover:bg-signal-400">
+        <button type="submit" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-signal-500 font-semibold text-navy-950 transition hover:bg-signal-400">
             Create account <x-icon name="arrow-right" class="size-4" />
         </button>
     </form>

@@ -50,7 +50,7 @@
 
             <div class="sticky bottom-4 z-10 flex items-center justify-between gap-4 rounded-2xl bg-navy-900 p-4 shadow-2xl sm:px-6">
                 <p class="text-sm text-navy-200">Saved values replace the defaults everywhere on the site.</p>
-                <button type="submit" class="btn-shine inline-flex h-11 shrink-0 items-center rounded-full bg-signal-500 px-6 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">Save settings</button>
+                <button type="submit" class="inline-flex h-11 shrink-0 items-center rounded-full bg-signal-500 px-6 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">Save settings</button>
             </div>
         </form>
     </div>

@@ -37,7 +37,7 @@
                     <p class="mt-4 text-sm text-slate-600">This invoice is a draft. Issuing it locks it for editing and takes stocked items out of inventory.</p>
                     <form method="POST" action="{{ route('admin.invoices.issue', $invoice) }}" class="mt-4" data-confirm="Issue invoice {{ $invoice->number }}? It can no longer be edited afterwards.">
                         @csrf
-                        <button type="submit" class="btn-shine inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-signal-500 px-5 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
+                        <button type="submit" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-signal-500 px-5 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
                             Issue invoice <x-icon name="arrow-right" class="size-4" />
                         </button>
                     </form>

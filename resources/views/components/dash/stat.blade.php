@@ -10,7 +10,7 @@
     $tag = $href ? 'a' : 'div';
 @endphp
 
-<{{ $tag }} @if ($href) href="{{ $href }}" @endif data-spotlight
+<{{ $tag }} @if ($href) href="{{ $href }}" @endif
     {{ $attributes->class('group relative block overflow-hidden rounded-2xl bg-white p-5 ring-1 ring-navy-100 transition duration-300 hover:-translate-y-0.5 hover:shadow-card-hover sm:p-6') }}>
     <div class="flex items-start justify-between gap-4">
         <div class="min-w-0">

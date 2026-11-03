@@ -156,7 +156,7 @@
                                 @if ($newCount) <span class="absolute top-1.5 right-1.5 size-2.5 rounded-full bg-signal-500 ring-2 ring-white" aria-hidden="true"></span> @endif
                             </a>
                         @else
-                            <x-button :href="route('dashboard.enquiries.create')" size="sm" class="btn-shine hidden sm:inline-flex">New request</x-button>
+                            <x-button :href="route('dashboard.enquiries.create')" size="sm" class="hidden sm:inline-flex">New request</x-button>
                         @endif
                     </div>
                 </div>

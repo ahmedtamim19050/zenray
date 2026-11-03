@@ -1,37 +1,62 @@
-{{-- "Who we serve": facility types (not named clients) --}}
-<section id="industries" class="relative isolate scroll-mt-24 overflow-hidden bg-film-950 py-24 text-white sm:py-32" aria-labelledby="industries-heading">
-    <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-        <div class="hero-aurora absolute -top-40 -left-32 size-[36rem] rounded-full bg-signal-500/20 blur-[120px]"></div>
-        <div class="hero-aurora is-alt absolute -right-40 -bottom-40 size-[34rem] rounded-full bg-sky-500/15 blur-[120px]"></div>
-        <div class="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"></div>
-    </div>
+{{--
+    "Who we serve": facility types (not named clients) as a list beside one large photo.
+    Hovering or focusing a row switches the photo (app.js, [data-industries]). Small screens
+    show a thumbnail in each row instead. Photos are representative and repeat in order, so
+    facility types added from the admin always get one.
+--}}
+@php
+    $industries = config('zenray.industries');
+    $photos = ['angio-suite', 'ultrasound', 'dr-wallstand', 'hero-room', 'c-arm', 'xray-mobile'];
+    $contactUrl = route('contact', ['interest' => 'other']);
+@endphp
 
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+<section id="industries" class="scroll-mt-24 bg-film-900 py-16 sm:py-24" aria-labelledby="industries-heading" data-industries>
+    <div class="mx-auto grid max-w-7xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
+        <div class="lg:sticky lg:top-24 lg:col-span-5">
             <x-section-heading id="industries-heading" eyebrow="Who we serve" title="Solutions for every kind of healthcare facility" dark>
                 <x-slot:description>
                     From large hospitals to small practices, we help match equipment and support to the way your facility works.
                 </x-slot:description>
             </x-section-heading>
-            <x-button :href="route('contact', ['interest' => 'other'])" variant="outline-light" icon="arrow-right" class="self-start bg-white/5 lg:self-auto">Discuss your facility</x-button>
+
+            <a href="{{ $contactUrl }}" class="group mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-ink">
+                <span class="link-draw">Discuss your facility</span>
+                <x-icon name="arrow-right" class="size-4 transition-transform duration-300 ease-calm group-hover:translate-x-1" />
+            </a>
+
+            <div class="relative mt-8 hidden aspect-[4/3] overflow-hidden rounded-2xl bg-film-700 lg:block" data-reveal>
+                @foreach ($industries as $industry)
+                    <div class="carousel-slide carousel-media absolute inset-0" data-industry-photo @if ($loop->first) data-active @endif>
+                        <x-photo :name="$photos[$loop->index % count($photos)]" alt="" sizes="480px" />
+                    </div>
+                @endforeach
+            </div>
         </div>
 
-        <ul class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
-            @foreach (config('zenray.industries') as $industry)
-                <li data-spotlight style="--spot: rgb(242 140 40 / 0.22)"
-                    class="group relative overflow-hidden rounded-3xl bg-white/[0.04] p-7 ring-1 ring-white/10 transition duration-500 hover:-translate-y-1 hover:bg-white/[0.07] hover:ring-signal-500/50 sm:p-8">
-                    <div class="flex items-start justify-between">
-                        <span class="flex size-14 items-center justify-center rounded-2xl bg-linear-to-br from-signal-400 to-signal-600 text-navy-950 shadow-[0_10px_30px_-10px_rgb(242_140_40/0.8)] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-6deg]">
-                            <x-icon :name="$industry['icon']" class="size-7" />
+        <ul class="border-t border-film-600 lg:col-span-7" data-stagger>
+            @foreach ($industries as $industry)
+                <li class="group relative border-b border-film-600" data-industry-row @if ($loop->first) data-active @endif>
+                    <a href="{{ $contactUrl }}" class="flex items-center gap-5 py-6 -outline-offset-2">
+                        <span class="size-16 shrink-0 overflow-hidden rounded-xl bg-film-700 lg:hidden">
+                            <x-photo :name="$photos[$loop->index % count($photos)]" alt="" sizes="64px" />
                         </span>
-                        <span class="font-mono text-sm text-navy-300" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                    </div>
-                    <h3 class="mt-8 text-xl font-bold">{{ $industry['name'] }}</h3>
-                    <p class="mt-2 text-[0.9375rem] leading-relaxed text-navy-200">{{ $industry['text'] }}</p>
-                    <a href="{{ route('contact', ['interest' => 'other']) }}" class="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-signal-400 after:absolute after:inset-0 hover:text-signal-300">
-                        Talk to us about {{ Str::lower($industry['name']) }}
-                        <x-icon name="arrow-right" class="size-4 transition-transform group-hover:translate-x-1" />
+                        <span class="hidden size-11 shrink-0 items-center justify-center rounded-xl bg-glow-400/10 text-glow-300 ring-1 ring-glow-400/25 transition-colors duration-300 lg:flex lg:group-data-active:bg-signal-500 lg:group-data-active:text-navy-950 lg:group-data-active:ring-signal-500">
+                            <x-icon :name="$industry['icon']" class="size-5" />
+                        </span>
+
+                        <span class="min-w-0 flex-1 transition-transform duration-300 ease-calm lg:motion-safe:group-data-active:translate-x-1">
+                            <span class="block text-lg leading-snug font-semibold tracking-tight text-ink sm:text-xl">{{ $industry['name'] }}</span>
+                            <span class="mt-1 block text-sm leading-relaxed text-ink-2">{{ $industry['text'] }}</span>
+                        </span>
+
+                        <span class="hidden size-10 shrink-0 items-center justify-center rounded-full text-ink ring-1 ring-film-500 transition-colors duration-300 sm:flex lg:group-data-active:bg-signal-500 lg:group-data-active:text-navy-950 lg:group-data-active:ring-signal-500">
+                            <x-icon name="arrow-right" class="size-4 -rotate-45 transition-transform duration-300 ease-calm lg:group-data-active:rotate-0" />
+                        </span>
+                        <span class="sr-only">Talk to us about {{ Str::lower($industry['name']) }}</span>
                     </a>
+
+                    {{-- Orange line that draws along the bottom of the active row --}}
+                    <span class="absolute inset-x-0 -bottom-px h-0.5 origin-left scale-x-0 bg-signal-500 transition-transform duration-500 ease-calm lg:group-data-active:scale-x-100" aria-hidden="true"></span>
                 </li>
             @endforeach
         </ul>

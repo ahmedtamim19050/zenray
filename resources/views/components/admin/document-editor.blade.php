@@ -159,7 +159,7 @@
         <p class="text-sm text-navy-200">Total <span class="ml-1 text-lg font-bold text-white tabular-nums" data-total>—</span></p>
         <div class="flex items-center gap-4">
             <a href="{{ url()->previous() }}" class="text-sm font-semibold text-navy-200 hover:text-white">Cancel</a>
-            <button type="submit" class="btn-shine inline-flex h-11 shrink-0 items-center rounded-full bg-signal-500 px-6 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
+            <button type="submit" class="inline-flex h-11 shrink-0 items-center rounded-full bg-signal-500 px-6 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
                 {{ $document->exists ? 'Save changes' : 'Save as draft' }}
             </button>
         </div>

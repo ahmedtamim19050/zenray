@@ -30,7 +30,7 @@
 
         <div class="sticky bottom-4 z-10 mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-navy-900 p-4 shadow-2xl sm:px-6">
             <a href="{{ route('admin.content.index', $resource) }}" class="text-sm font-semibold text-navy-200 hover:text-white">Cancel</a>
-            <button type="submit" class="btn-shine inline-flex h-11 shrink-0 items-center rounded-full bg-signal-500 px-6 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
+            <button type="submit" class="inline-flex h-11 shrink-0 items-center rounded-full bg-signal-500 px-6 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
                 {{ $editing ? 'Save changes' : 'Add '.Str::lower($config['singular']) }}
             </button>
         </div>

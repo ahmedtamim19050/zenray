@@ -48,7 +48,7 @@
 
                     <form method="POST" action="{{ route('admin.quotes.convert', $quote) }}" class="mt-4">
                         @csrf
-                        <button type="submit" class="btn-shine inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-signal-500 px-5 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
+                        <button type="submit" class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-signal-500 px-5 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
                             Convert to invoice <x-icon name="arrow-right" class="size-4" />
                         </button>
                     </form>

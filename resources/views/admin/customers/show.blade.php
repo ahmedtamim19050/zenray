@@ -3,7 +3,7 @@
     <x-slot:actions>
         <x-button :href="route('admin.customers.index')" variant="outline" size="sm">← All customers</x-button>
         <x-button :href="route('admin.invoices.create', ['customer' => $customer->id])" variant="outline" size="sm">New invoice</x-button>
-        <x-button :href="route('admin.quotes.create', ['customer' => $customer->id])" size="sm" class="btn-shine">New quote</x-button>
+        <x-button :href="route('admin.quotes.create', ['customer' => $customer->id])" size="sm" >New quote</x-button>
     </x-slot:actions>
 
     <div class="grid gap-6 xl:grid-cols-3">

@@ -12,7 +12,7 @@
                 <a href="{{ route('password.request') }}" class="text-sm font-semibold text-navy-800 underline-offset-4 hover:underline">Forgot password?</a>
             </div>
         </div>
-        <button type="submit" class="btn-shine inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-navy-800 font-semibold text-white transition hover:bg-navy-700">
+        <button type="submit" class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-navy-800 font-semibold text-white transition hover:bg-navy-700">
             Sign in <x-icon name="arrow-right" class="size-4" />
         </button>
     </form>

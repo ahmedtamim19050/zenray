@@ -71,7 +71,7 @@
 
                     <x-admin.field name="is_featured" :field="$fields['is_featured']" :model="$post" />
 
-                    <button type="submit" class="btn-shine inline-flex h-11 items-center justify-center rounded-full bg-signal-500 px-6 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
+                    <button type="submit" class="inline-flex h-11 items-center justify-center rounded-full bg-signal-500 px-6 text-sm font-semibold text-navy-950 transition hover:bg-signal-400">
                         {{ $editing ? 'Save post' : 'Create post' }}
                     </button>
                 </div>

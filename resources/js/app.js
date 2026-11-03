@@ -4,38 +4,6 @@ window.zenrayReady = true;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-// Split headings into words so they can rise in one by one
-document.querySelectorAll('[data-split]').forEach((heading) => {
-    let index = 0;
-    const wrap = (node) => {
-        [...node.childNodes].forEach((child) => {
-            if (child.nodeType === Node.TEXT_NODE) {
-                const fragment = document.createDocumentFragment();
-                child.textContent.split(/(\s+)/).forEach((part) => {
-                    if (!part) return;
-                    if (/^\s+$/.test(part)) {
-                        fragment.append(part);
-                        return;
-                    }
-                    const outer = document.createElement('span');
-                    const inner = document.createElement('span');
-                    outer.className = 'split-word';
-                    inner.style.setProperty('--w', index++);
-                    inner.textContent = part;
-                    outer.append(inner);
-                    fragment.append(outer);
-                });
-                child.replaceWith(fragment);
-            } else if (child.nodeType === Node.ELEMENT_NODE) {
-                wrap(child);
-            }
-        });
-    };
-    heading.setAttribute('aria-label', heading.textContent.replace(/\s+/g, ' ').trim());
-    wrap(heading);
-    [...heading.children].forEach((el) => el.setAttribute('aria-hidden', 'true'));
-});
-
 // Give staggered children their order index
 document.querySelectorAll('[data-stagger]').forEach((group) => {
     [...group.children].forEach((child, i) => child.style.setProperty('--i', i));
@@ -49,52 +17,42 @@ if (siteHeader) {
     window.addEventListener('scroll', onScroll, { passive: true });
 }
 
-// Cursor spotlight + 3D tilt (fine pointers only, never with reduced motion)
-if (finePointer && !reduceMotion) {
-    document.querySelectorAll('[data-spotlight]').forEach((el) => {
-        el.addEventListener('pointermove', (event) => {
-            const rect = el.getBoundingClientRect();
-            el.style.setProperty('--mx', `${event.clientX - rect.left}px`);
-            el.style.setProperty('--my', `${event.clientY - rect.top}px`);
+// Light / dark theme. Light is the default; the head script re-applies a saved choice before first paint.
+const themeToggles = document.querySelectorAll('[data-theme-toggle]');
+
+if (themeToggles.length) {
+    const root = document.documentElement;
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+
+    const reflectTheme = () => {
+        const dark = root.dataset.theme === 'dark';
+        themeToggles.forEach((button) => {
+            button.setAttribute('aria-pressed', String(dark));
+            button.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+        });
+        themeColor?.setAttribute('content', getComputedStyle(root).getPropertyValue('--color-film-950').trim());
+    };
+
+    const setTheme = (dark) => {
+        if (dark) root.dataset.theme = 'dark';
+        else delete root.dataset.theme;
+        try {
+            localStorage.setItem('zenray-theme', dark ? 'dark' : 'light');
+        } catch {
+            // Private browsing can block storage. The switch still works for this page.
+        }
+        reflectTheme();
+    };
+
+    themeToggles.forEach((button) => {
+        button.addEventListener('click', () => {
+            const dark = root.dataset.theme !== 'dark';
+            if (document.startViewTransition && !reduceMotion) document.startViewTransition(() => setTheme(dark));
+            else setTheme(dark);
         });
     });
 
-    document.querySelectorAll('[data-tilt]').forEach((el) => {
-        const max = Number(el.dataset.tilt) || 6;
-        let frame = 0;
-
-        el.addEventListener('pointermove', (event) => {
-            cancelAnimationFrame(frame);
-            frame = requestAnimationFrame(() => {
-                const rect = el.getBoundingClientRect();
-                const x = (event.clientX - rect.left) / rect.width - 0.5;
-                const y = (event.clientY - rect.top) / rect.height - 0.5;
-                el.classList.add('is-tilting');
-                el.style.setProperty('--ry', `${(x * max).toFixed(2)}deg`);
-                el.style.setProperty('--rx', `${(-y * max).toFixed(2)}deg`);
-            });
-        });
-
-        el.addEventListener('pointerleave', () => {
-            cancelAnimationFrame(frame);
-            el.classList.remove('is-tilting');
-            el.style.setProperty('--rx', '0deg');
-            el.style.setProperty('--ry', '0deg');
-        });
-    });
-}
-
-// X-ray lens: on fine pointers, reveal the other layer of an <x-xray> frame around the cursor
-if (finePointer) {
-    document.querySelectorAll('[data-xray-lens]').forEach((el) => {
-        el.addEventListener('pointermove', (event) => {
-            const rect = el.getBoundingClientRect();
-            el.style.setProperty('--lx', `${event.clientX - rect.left}px`);
-            el.style.setProperty('--ly', `${event.clientY - rect.top}px`);
-            el.classList.add('is-lensing');
-        });
-        el.addEventListener('pointerleave', () => el.classList.remove('is-lensing'));
-    });
+    reflectTheme();
 }
 
 // Mobile navigation
@@ -146,7 +104,7 @@ if (toggle && menu) {
         }
     });
 
-    window.matchMedia('(min-width: 1024px)').addEventListener('change', (event) => {
+    window.matchMedia('(min-width: 1280px)').addEventListener('change', (event) => {
         if (event.matches && isOpen()) setOpen(false);
     });
 }
@@ -170,9 +128,9 @@ document.querySelectorAll('[data-explorer]').forEach((explorer) => {
     });
 });
 
-// Reveal animations (fade-and-rise, staggered groups, split headings) play as
+// Reveal animations (fade-and-rise, staggered groups) play as
 // elements scroll into view. Skipped entirely under reduced motion.
-const revealables = document.querySelectorAll('[data-reveal], [data-stagger], [data-split]');
+const revealables = document.querySelectorAll('[data-reveal], [data-stagger]');
 
 if ('IntersectionObserver' in window && !reduceMotion) {
     const observer = new IntersectionObserver(
@@ -192,7 +150,7 @@ if ('IntersectionObserver' in window && !reduceMotion) {
     revealables.forEach((el) => el.classList.add('is-visible'));
 }
 
-// Featured equipment filter. Category links ([data-filter-link]) and ?category= also drive it.
+// Featured equipment filter. ?category= also drives it.
 const filterGroup = document.querySelector('[data-filter-group]');
 const filterGrid = document.querySelector('[data-filter-grid]');
 
@@ -200,6 +158,21 @@ if (filterGroup && filterGrid) {
     const buttons = filterGroup.querySelectorAll('[data-filter]');
     const items = filterGrid.querySelectorAll('[data-filter-item]');
     const status = document.querySelector('[data-filter-status]');
+
+    // Mixed tile sizes on a four-column grid: wide, small, small / small, small, wide. The last
+    // tile is wide too, so filtered results look deliberate, but never wider than two columns
+    // because a photo stretched across the whole row crops badly.
+    const arrangeTiles = () => {
+        const visible = [...items].filter((item) => !item.hidden);
+        let column = 0;
+        visible.forEach((item, index) => {
+            const remaining = 4 - column;
+            const wanted = index % 6 === 0 || index % 6 === 5 || index === visible.length - 1 ? 2 : 1;
+            const span = Math.min(wanted, remaining);
+            item.style.setProperty('--span', span);
+            column = (column + span) % 4;
+        });
+    };
 
     const applyFilter = (slug) => {
         if (![...buttons].some((b) => b.dataset.filter === slug)) slug = 'all';
@@ -213,23 +186,69 @@ if (filterGroup && filterGrid) {
             if (match) shown++;
         });
 
+        arrangeTiles();
         if (status) status.textContent = `Showing ${shown} ${shown === 1 ? 'item' : 'items'}`;
     };
 
     buttons.forEach((b) => b.addEventListener('click', () => applyFilter(b.dataset.filter)));
 
-    document.querySelectorAll('[data-filter-link]').forEach((link) => {
-        link.addEventListener('click', (event) => {
-            event.preventDefault();
-            applyFilter(link.dataset.filterLink);
-            document.getElementById('featured-equipment').scrollIntoView({ behavior: 'smooth' });
-            history.replaceState(null, '', '#featured-equipment');
-        });
-    });
-
     const initial = new URLSearchParams(location.search).get('category');
     if (initial) applyFilter(initial);
+    else arrangeTiles();
 }
+
+// "Who we serve": hovering or focusing a row shows its photo. The last one stays until the next.
+document.querySelectorAll('[data-industries]').forEach((section) => {
+    const rows = [...section.querySelectorAll('[data-industry-row]')];
+    const photos = [...section.querySelectorAll('[data-industry-photo]')];
+
+    rows.forEach((row, current) => {
+        const activate = () => {
+            [rows, photos].forEach((list) => list.forEach((el, i) => el.toggleAttribute('data-active', i === current)));
+        };
+        row.addEventListener('pointerenter', activate);
+        row.addEventListener('focusin', activate);
+    });
+});
+
+// Section tabs: the tab for the section in view is marked, and scrolled into sight on small screens.
+document.querySelectorAll('[data-section-tabs]').forEach((nav) => {
+    const list = nav.querySelector('ul');
+    const tabs = [...nav.querySelectorAll('a')];
+
+    const mark = (id) => {
+        tabs.forEach((tab) => {
+            const current = tab.getAttribute('href') === `#${id}`;
+            tab.toggleAttribute('aria-current', current);
+            if (current) {
+                tab.setAttribute('aria-current', 'true');
+                list.scrollTo({ left: tab.offsetLeft - list.offsetLeft - 16, behavior: reduceMotion ? 'auto' : 'smooth' });
+            }
+        });
+    };
+
+    const sections = [...document.querySelectorAll('[data-section-tab-target]')];
+    let active = null;
+    let ticking = false;
+
+    // The current section is the last one whose top has passed under the header and tabs.
+    // Checked on every scroll, so fast scrolling and jumps can't leave the wrong tab marked.
+    const sync = () => {
+        ticking = false;
+        const current = sections.filter((section) => section.getBoundingClientRect().top <= 120).pop() ?? sections[0];
+        if (current === active) return;
+        active = current;
+        mark(current.id);
+    };
+
+    window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(sync);
+    }, { passive: true });
+
+    sync();
+});
 
 // Product quick view
 const quickView = document.querySelector('[data-quick-view-dialog]');
@@ -245,6 +264,12 @@ if (quickView && typeof quickView.showModal === 'function') {
             set('[data-qv-name]', (el) => (el.textContent = d.name));
             set('[data-qv-category]', (el) => (el.textContent = d.category));
             set('[data-qv-summary]', (el) => (el.textContent = d.summary));
+            set('[data-qv-availability]', (el) => (el.textContent = d.availability));
+            set('[data-qv-features]', (el) => {
+                const features = JSON.parse(d.features || '[]');
+                el.replaceChildren(...features.map((feature) => Object.assign(document.createElement('li'), { textContent: feature })));
+                el.hidden = features.length === 0;
+            });
             set('[data-qv-quote]', (el) => (el.href = d.quote));
             set('[data-qv-example]', (el) => (el.hidden = d.example !== '1'));
             quickView.showModal();
@@ -257,8 +282,7 @@ if (quickView && typeof quickView.showModal === 'function') {
     });
 }
 
-// Film viewer gallery: hover or focus opens a panel on large screens, swiping
-// centres one on small screens. The active panel develops into colour (app.css).
+// Gallery: hover or focus opens a panel on large screens, swiping centres one on small screens.
 document.querySelectorAll('[data-gallery]').forEach((gallery) => {
     const track = gallery.querySelector('[data-gallery-track]');
     const panels = [...gallery.querySelectorAll('[data-gallery-panel]')];
@@ -370,95 +394,84 @@ document.querySelectorAll('[data-enquiry-form]').forEach((form) => {
 
 document.querySelector('[data-autofocus]')?.focus({ preventScroll: true });
 
-// Hero carousel. A JS timer drives autoplay (remaining time is kept while paused);
-// the progress bars are a CSS animation kept in step via the is-paused / is-stopped
-// classes. Hover or keyboard focus pauses; any manual control stops autoplay.
+// Hero slideshow. The active tab's loading line is a CSS animation; when it finishes, the next
+// slide opens, so pausing the animation pauses the slideshow. Hovering or keyboard focus pauses;
+// choosing a tab or the pause button stops it. It never starts under reduced motion.
 document.querySelectorAll('[data-carousel]').forEach((carousel) => {
     const texts = carousel.querySelectorAll('[data-slide-text]');
     const media = carousel.querySelectorAll('[data-slide-media]');
     const tabs = carousel.querySelectorAll('[data-carousel-tab]');
     const toggleButton = carousel.querySelector('[data-carousel-toggle]');
     const toggleLabel = carousel.querySelector('[data-carousel-toggle-label]');
-    const duration = parseFloat(getComputedStyle(carousel).getPropertyValue('--carousel-duration')) * 1000 || 7000;
-
     let current = 0;
-    let stopped = false;
-    let paused = false;
-    let remaining = duration;
-    let startedAt = null;
-    let timer;
+    let hovering = false;
+    let focused = false;
 
-    const halt = () => {
-        clearTimeout(timer);
-        if (startedAt !== null) remaining -= performance.now() - startedAt;
-        startedAt = null;
-    };
-
-    const schedule = () => {
-        clearTimeout(timer);
-        if (stopped || paused) return;
-        startedAt = performance.now();
-        timer = setTimeout(() => {
-            startedAt = null;
-            go(current + 1);
-            schedule();
-        }, Math.max(remaining, 0));
-    };
+    if (!toggleButton) return;
 
     const go = (index) => {
         current = (index + tabs.length) % tabs.length;
-        remaining = duration;
         [texts, media].forEach((list) =>
             list.forEach((slide, i) => {
-                const active = i === current;
-                slide.toggleAttribute('data-active', active);
-                slide.inert = !active;
+                slide.toggleAttribute('data-active', i === current);
+                slide.inert = i !== current;
             }),
         );
         tabs.forEach((tab, i) => tab.setAttribute('aria-current', String(i === current)));
     };
 
-    const setStopped = (value) => {
-        stopped = value;
-        carousel.classList.toggle('is-stopped', value);
-        toggleLabel.textContent = value ? 'Play slideshow' : 'Pause slideshow';
-        if (value) {
-            halt();
-        } else {
-            remaining = duration;
-            schedule();
-        }
+    const syncPaused = () => carousel.classList.toggle('is-paused', hovering || focused || document.hidden);
+
+    const setPlaying = (playing) => {
+        const label = playing ? 'Pause slideshow' : 'Play slideshow';
+        carousel.classList.toggle('is-playing', playing);
+        toggleLabel.textContent = label;
+        toggleButton.title = label;
     };
 
-    const setPaused = (value) => {
-        if (paused === value) return;
-        paused = value;
-        carousel.classList.toggle('is-paused', value);
-        if (value) halt();
-        else schedule();
-    };
-
-    const manual = (index) => {
-        setStopped(true);
-        go(index);
-    };
-
-    tabs.forEach((tab, i) => tab.addEventListener('click', () => manual(i)));
-    carousel.querySelector('[data-carousel-prev]').addEventListener('click', () => manual(current - 1));
-    carousel.querySelector('[data-carousel-next]').addEventListener('click', () => manual(current + 1));
-    toggleButton.addEventListener('click', () => setStopped(!stopped));
-
-    carousel.addEventListener('pointerenter', () => setPaused(true));
-    carousel.addEventListener('pointerleave', () => setPaused(false));
-    carousel.addEventListener('focusin', () => setPaused(true));
-    carousel.addEventListener('focusout', (event) => {
-        if (!carousel.contains(event.relatedTarget)) setPaused(false);
+    tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => {
+            setPlaying(false);
+            go(i);
+        });
+        tab.addEventListener('animationend', (event) => {
+            if (event.animationName === 'tab-progress') go(current + 1);
+        });
     });
-    document.addEventListener('visibilitychange', () => setPaused(document.hidden));
 
-    if (reduceMotion) setStopped(true);
-    else schedule();
+    toggleButton.addEventListener('click', () => {
+        focused = false;
+        syncPaused();
+        setPlaying(!carousel.classList.contains('is-playing'));
+    });
+
+    if (finePointer) {
+        carousel.addEventListener('mouseenter', () => {
+            hovering = true;
+            syncPaused();
+        });
+        carousel.addEventListener('mouseleave', () => {
+            hovering = false;
+            syncPaused();
+        });
+    }
+
+    // Keyboard focus only: a mouse click also moves focus, but must not leave the slideshow paused.
+    carousel.addEventListener('focusin', (event) => {
+        focused = event.target.matches(':focus-visible');
+        syncPaused();
+    });
+    carousel.addEventListener('focusout', (event) => {
+        if (carousel.contains(event.relatedTarget)) return;
+        focused = false;
+        syncPaused();
+    });
+    document.addEventListener('visibilitychange', syncPaused);
+
+    toggleButton.hidden = false;
+    setPlaying(!reduceMotion);
 });
+
 // Desktop mega menu / dropdowns: click or hover to open, Escape or outside click to close
 const menus = [...document.querySelectorAll('[data-menu]')];
 

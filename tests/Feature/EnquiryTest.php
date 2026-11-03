@@ -83,7 +83,7 @@ test('submissions that fill the honeypot are rejected', function () {
 test('the interest can be preselected from the query string', function () {
     $this->get('/request-a-quote?interest=installation')
         ->assertOk()
-        ->assertSee('<option value="installation" selected', false);
+        ->assertSeeInOrder(['name="interest" value="installation"', 'checked'], false);
 });
 
 test('a mail failure still keeps the enquiry for the admin dashboard', function () {

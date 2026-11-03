@@ -4,8 +4,11 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/* Dark mode is an explicit visitor choice (html[data-theme=dark]); light is the default. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* Brand: Navy #0B2D4D */
@@ -34,30 +37,63 @@
     --color-brand-navy: #0B2D4D;
     --color-brand-orange: #F28C28;
 
-    /* Public site "X-ray" theme. Film: dark radiograph surfaces, 950 is the page. */
-    --color-film-950: #02070B;
-    --color-film-900: #050E15;
-    --color-film-800: #0A1721;
-    --color-film-700: #10212D;
-    --color-film-600: #1A3140;
-    --color-film-500: #2A4759;
+    /* Public site surfaces. Film: 950 is the page, 900 an alternate section, 800 a card,
+       700 a hover or inset, 600 and 500 are borders. These are the light theme's values;
+       [data-theme='dark'] below swaps them, so markup needs no dark: variants. */
+    --color-film-950: #FFFFFF;
+    --color-film-900: #F5F7FA;
+    --color-film-800: #FFFFFF;
+    --color-film-700: #EDF1F5;
+    --color-film-600: #D5DDE5;
+    --color-film-500: #94A5B5;
 
-    /* Glow: the cyan of a lit viewer / phosphor screen. */
-    --color-glow-50: #EAFBFF;
-    --color-glow-100: #C9F4FF;
-    --color-glow-200: #9BEAFF;
-    --color-glow-300: #67DCFA;
-    --color-glow-400: #2EC7F0;
-    --color-glow-500: #10A9D4;
-    --color-glow-600: #0A86AA;
+    /* Glow: the calm blue accent, for links, icons and secondary buttons. */
+    --color-glow-50: #0B2D4D;
+    --color-glow-100: #0B2D4D;
+    --color-glow-200: #0F3D66;
+    --color-glow-300: #124E80;
+    --color-glow-400: #124E80;
+    --color-glow-500: #0B3C63;
+    --color-glow-600: #0B2D4D;
 
-    /* Ink: text on film. ink-3 stays >= 4.5:1 on film-700. */
-    --color-ink: #E7F1F7;
-    --color-ink-2: #A8BCCA;
-    --color-ink-3: #7C93A4;
+    /* Ink: text. ink-3, the faintest, stays >= 4.5:1 on every film surface. */
+    --color-ink: #0E2235;
+    --color-ink-2: #34495C;
+    --color-ink-3: #526678;
+
+    /* Orange text. signal-500 is too light to read as text on white. */
+    --color-signal-text: #A9560F;
 
     --shadow-card: 0 1px 2px rgb(11 45 77 / 0.04), 0 4px 16px -4px rgb(11 45 77 / 0.08);
     --shadow-card-hover: 0 2px 4px rgb(11 45 77 / 0.05), 0 16px 32px -8px rgb(11 45 77 / 0.16);
+}
+
+[data-theme='dark'] {
+    color-scheme: dark;
+
+    --color-film-950: #0C1824;
+    --color-film-900: #101F2D;
+    --color-film-800: #152636;
+    --color-film-700: #1C3043;
+    --color-film-600: #2C4256;
+    --color-film-500: #4C6478;
+
+    --color-glow-50: #F0F7FC;
+    --color-glow-100: #D6EAF7;
+    --color-glow-200: #B4D9F1;
+    --color-glow-300: #93C8EA;
+    --color-glow-400: #93C8EA;
+    --color-glow-500: #B4D9F1;
+    --color-glow-600: #D6EAF7;
+
+    --color-ink: #F2F6FA;
+    --color-ink-2: #C7D3DE;
+    --color-ink-3: #A3B3C2;
+
+    --color-signal-text: #F7AC67;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px -4px rgb(0 0 0 / 0.35);
+    --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.3), 0 16px 32px -8px rgb(0 0 0 / 0.5);
 }
 
 @layer base {
@@ -86,99 +122,28 @@
         }
     }
 
-    /* Public site: everything sits on dark film, so focus rings glow cyan. */
+    /* Public site: a type scale slightly above the defaults, still comfortable for visitors in
+       their 50s and 60s. Utilities read these variables, so text-sm and friends follow. */
     .xray {
-        color-scheme: dark;
+        --text-xs: 0.8125rem;
+        --text-sm: 0.9375rem;
+        --text-base: 1rem;
+        --text-lg: 1.0625rem;
+        font-size: var(--text-base);
+        line-height: 1.6;
     }
 
-    .xray :focus-visible,
-    .xray :where(.bg-navy-800, .bg-navy-900) :focus-visible {
-        outline-color: var(--color-glow-300);
+    .xray :focus-visible {
+        outline-color: var(--color-glow-500);
     }
 
-    .xray :where(.bg-signal-500) :focus-visible {
-        outline-color: var(--color-film-950);
+    .xray .bg-navy-800 :focus-visible {
+        outline-color: var(--color-signal-400);
     }
-
-    .xray ::selection {
-        background: rgb(46 199 240 / 0.35);
-        color: white;
-    }
-}
-
-/* ==========================================================================
-   X-ray theme (public layout only, scoped to body.xray)
-   ========================================================================== */
-
-/* Film grain + CRT scanlines over the whole page, purely decorative. */
-.xray::before,
-.xray::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 70;
-    pointer-events: none;
-}
-
-.xray::before {
-    opacity: 0.07;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-.xray::after {
-    opacity: 0.35;
-    background: repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 0.12) 2px 3px);
-}
-
-@property --scan-x {
-    syntax: '<percentage>';
-    inherits: true;
-    initial-value: -20%;
-}
-
-@property --lr {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 0px;
 }
 
 @layer components {
-/* Cyan bloom behind a dark section, like a lit light box. */
-.xray-bloom {
-    background:
-        radial-gradient(ellipse 60% 50% at 50% 0%, rgb(46 199 240 / 0.1), transparent 70%),
-        var(--color-film-950);
-}
-
-/* Radiograph negative of any photo. */
-.is-xray {
-    filter: grayscale(1) invert(1) sepia(0.6) hue-rotate(155deg) saturate(1.8) contrast(1.25) brightness(0.95);
-}
-
-/* Product / gallery photos turn into a radiograph on hover. */
-.xray-hover {
-    transition: filter 0.6s ease;
-}
-
-.group:hover .xray-hover,
-.group:focus-visible .xray-hover {
-    filter: grayscale(1) invert(1) sepia(0.6) hue-rotate(155deg) saturate(1.8) contrast(1.25) brightness(0.95);
-}
-
-/* Film viewer gallery: negatives that develop into colour when active. A swipeable
-   track on small screens, side-by-side panels that open on large screens. */
-@keyframes gallery-scan {
-    from {
-        opacity: 1;
-        transform: translateX(-100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(250%);
-    }
-}
-
+/* Gallery: a swipeable track on small screens, side-by-side panels that open on large screens. */
 .gallery-track {
     padding-inline: 9%;
     scrollbar-width: none;
@@ -193,46 +158,7 @@
     width: 100%;
     aspect-ratio: 4 / 5;
     max-height: 75vh;
-    transform: scale(0.95);
-    transition: transform 0.5s ease, box-shadow 0.5s ease, flex-grow 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-.gallery-panel.is-active {
-    transform: none;
-    box-shadow: 0 0 44px -14px rgb(46 199 240 / 0.55);
-}
-
-.gallery-photo {
-    filter: grayscale(1) invert(1) sepia(0.6) hue-rotate(155deg) saturate(1.8) contrast(1.25) brightness(0.8);
-    transition: filter 0.8s ease;
-}
-
-.is-active .gallery-photo {
-    filter: none;
-}
-
-.gallery-scan {
-    opacity: 0;
-    background: linear-gradient(90deg, transparent, rgb(46 199 240 / 0.28) 80%, rgb(155 234 255 / 0.85));
-}
-
-.is-active .gallery-scan {
-    animation: gallery-scan 1s ease-out;
-}
-
-.gallery-corners {
-    opacity: 0;
-    transition: opacity 0.5s ease 0.2s;
-    background:
-        linear-gradient(var(--color-glow-300), var(--color-glow-300)) top left / 1.5rem 2px,
-        linear-gradient(var(--color-glow-300), var(--color-glow-300)) top left / 2px 1.5rem,
-        linear-gradient(var(--color-glow-300), var(--color-glow-300)) top right / 1.5rem 2px,
-        linear-gradient(var(--color-glow-300), var(--color-glow-300)) top right / 2px 1.5rem;
-    background-repeat: no-repeat;
-}
-
-.is-active .gallery-corners {
-    opacity: 1;
+    transition: flex-grow 0.5s cubic-bezier(0.2, 0, 0, 1);
 }
 
 @media (min-width: 40rem) {
@@ -250,25 +176,23 @@
         flex: 1 1 0;
         width: auto;
         min-width: 5rem;
-        height: 36rem;
+        height: 26rem;
         aspect-ratio: auto;
         max-height: none;
-        transform: none;
     }
 
     .gallery-panel.is-active {
         flex-grow: 6;
     }
 
-    /* Darkens the negative so the number and sideways caption stay readable. */
+    /* Darkens the photo so the number and sideways caption stay readable. */
     .gallery-spine {
-        background: linear-gradient(rgb(2 7 11 / 0.7), rgb(2 7 11 / 0.3) 25%, rgb(2 7 11 / 0.45) 55%, rgb(2 7 11 / 0.9));
-        transition: opacity 0.3s ease 0.2s;
+        background: rgb(5 23 38 / 0.55);
+        transition: opacity 0.25s ease;
     }
 
     .is-active .gallery-spine {
         opacity: 0;
-        transition-delay: 0s;
     }
 
     /* Keeps its width while the panel opens, so the text fades in instead of rewrapping. */
@@ -281,167 +205,18 @@
     .is-active .gallery-caption {
         width: 100%;
         opacity: 1;
-        transition: opacity 0.4s ease 0.35s;
+        transition: opacity 0.3s ease 0.2s;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .gallery-panel,
-    .gallery-photo,
-    .gallery-corners,
     .gallery-spine,
     .gallery-caption {
         transition: none;
     }
-
-    .is-active .gallery-scan {
-        animation: none;
-    }
-}
-
-/* X-ray frame: a base layer plus a second layer revealed by a scanning beam
-   ([data-scan]) and/or a pointer lens ([data-xray-lens], driven by app.js). */
-@keyframes xray-sweep {
-    0% {
-        --scan-x: -20%;
-    }
-    70%,
-    100% {
-        --scan-x: 120%;
-    }
-}
-
-.xray-frame {
-    --lr: 0px;
-    position: relative;
-    overflow: hidden;
-    transition: --lr 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-.xray-frame > img {
-    position: absolute;
-    inset: 0;
-}
-
-.xray-reveal {
-    clip-path: inset(0 100% 0 0);
-}
-
-.xray-frame[data-scan] {
-    animation: xray-sweep 7s cubic-bezier(0.45, 0, 0.4, 1) 1s infinite;
-}
-
-.xray-frame[data-scan] .xray-reveal {
-    clip-path: inset(0 calc(100% - var(--scan-x)) 0 calc(var(--scan-x) - 22%));
-}
-
-.xray-frame.is-lensing {
-    --lr: 7.5rem;
-}
-
-.xray-frame.is-lensing .xray-reveal {
-    clip-path: circle(var(--lr) at var(--lx, 50%) var(--ly, 50%));
-}
-
-.xray-beam {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: var(--scan-x);
-    width: 2px;
-    background: var(--color-glow-200);
-    box-shadow:
-        0 0 12px 2px rgb(46 199 240 / 0.9),
-        0 0 60px 14px rgb(46 199 240 / 0.35);
-    pointer-events: none;
-}
-
-.xray-frame.is-lensing .xray-beam {
-    opacity: 0;
-}
-
-.xray-frame:not(.is-lensing) .xray-lens-ring {
-    opacity: 0;
-}
-
-.xray-lens-ring {
-    position: absolute;
-    left: var(--lx, 50%);
-    top: var(--ly, 50%);
-    width: calc(var(--lr) * 2);
-    height: calc(var(--lr) * 2);
-    translate: -50% -50%;
-    border-radius: 9999px;
-    box-shadow:
-        0 0 0 1.5px rgb(103 220 250 / 0.85),
-        0 0 30px 4px rgb(46 199 240 / 0.45);
-    pointer-events: none;
-}
-
-/* Viewer HUD: corner brackets drawn with gradients. */
-.hud-corners {
-    --c: rgb(103 220 250 / 0.7);
-    --l: 22px;
-    background:
-        linear-gradient(var(--c), var(--c)) top left / var(--l) 1.5px,
-        linear-gradient(var(--c), var(--c)) top left / 1.5px var(--l),
-        linear-gradient(var(--c), var(--c)) top right / var(--l) 1.5px,
-        linear-gradient(var(--c), var(--c)) top right / 1.5px var(--l),
-        linear-gradient(var(--c), var(--c)) bottom left / var(--l) 1.5px,
-        linear-gradient(var(--c), var(--c)) bottom left / 1.5px var(--l),
-        linear-gradient(var(--c), var(--c)) bottom right / var(--l) 1.5px,
-        linear-gradient(var(--c), var(--c)) bottom right / 1.5px var(--l);
-    background-repeat: no-repeat;
-    pointer-events: none;
-}
-
-/* Ruler ticks along a viewer edge. */
-.hud-ruler {
-    background-image:
-        linear-gradient(to right, rgb(103 220 250 / 0.55) 1px, transparent 1px),
-        linear-gradient(to right, rgb(103 220 250 / 0.3) 1px, transparent 1px);
-    background-size:
-        50px 10px,
-        10px 5px;
-    background-repeat: repeat-x;
-    background-position: left bottom;
-}
-
-.text-glow {
-    text-shadow:
-        0 0 18px rgb(46 199 240 / 0.55),
-        0 0 2px rgb(155 234 255 / 0.6);
-}
-
-@keyframes blink {
-    50% {
-        opacity: 0.2;
-    }
-}
-
-.hud-blink {
-    animation: blink 1.6s steps(2, jump-none) infinite;
 }
 }
-
-@media (prefers-reduced-motion: reduce) {
-    .xray-frame[data-scan],
-    .hud-blink {
-        animation: none;
-    }
-
-    .xray-beam {
-        display: none;
-    }
-}
-
-@media print {
-    .xray::before,
-    .xray::after {
-        display: none;
-    }
-}
-
 
 /* Dashboard mobile drawer */
 .dash-open .dash-sidebar {
@@ -491,7 +266,7 @@
 }
 
 .legal li::marker {
-    color: var(--color-signal-500);
+    color: var(--color-signal-600);
 }
 
 /* Long-form articles (blog posts, project stories) rendered from Markdown */
@@ -559,7 +334,7 @@
     padding: 0.4em 0 0.4em 1.25em;
     color: var(--color-ink);
     font-style: italic;
-    background: linear-gradient(90deg, rgb(46 199 240 / 0.07), transparent);
+    background: var(--color-film-900);
 }
 
 .prose-xray code {
@@ -585,7 +360,7 @@
 
 .prose-xray hr {
     margin: 2.5em 0;
-    border-color: rgb(46 199 240 / 0.15);
+    border-color: var(--color-film-600);
 }
 
 .prose-xray img {

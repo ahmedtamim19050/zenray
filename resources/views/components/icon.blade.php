@@ -2,6 +2,12 @@
 
 <svg {{ $attributes->merge(['class' => 'size-6']) }} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     @switch($name)
+        @case('sun')
+            <circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+            @break
+        @case('moon')
+            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+            @break
         @case('xray')
             <path d="M4 3h7v5H4z" /><path d="M7.5 8v3" /><path d="m5 13 2.5-2 2.5 2" /><path d="M3 21h18" /><path d="M5 17h14v4H5z" /><path d="M14 5h6M14 8h4" />
             @break

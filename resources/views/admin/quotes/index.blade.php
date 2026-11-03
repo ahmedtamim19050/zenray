@@ -1,7 +1,7 @@
 <x-layouts.dashboard title="Quotations" area="admin">
     <x-slot:subtitle>Open quotes worth <span class="font-semibold text-navy-900">{{ \App\Support\Money::format($openValue) }}</span> (sent or accepted).</x-slot:subtitle>
     <x-slot:actions>
-        <x-button :href="route('admin.quotes.create')" size="sm" class="btn-shine"><span aria-hidden="true">+</span> New quote</x-button>
+        <x-button :href="route('admin.quotes.create')" size="sm" ><span aria-hidden="true">+</span> New quote</x-button>
     </x-slot:actions>
 
     <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

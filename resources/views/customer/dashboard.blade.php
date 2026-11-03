@@ -4,7 +4,7 @@
     {{-- Welcome banner --}}
     <section class="relative isolate mb-8 overflow-hidden rounded-3xl bg-navy-900 p-6 text-white sm:p-8" data-reveal>
         <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-            <div class="hero-aurora absolute -top-24 -right-24 size-80 rounded-full bg-signal-500/30 blur-3xl"></div>
+            <div class="absolute -top-24 -right-24 size-80 rounded-full bg-signal-500/30 blur-3xl"></div>
             <div class="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_top_right,black,transparent_70%)]"></div>
         </div>
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -14,7 +14,7 @@
                 <p class="mt-2 text-navy-200">Send a request and our team will get back to you. You can follow its progress here.</p>
             </div>
             <div class="flex flex-wrap gap-3">
-                <x-button :href="route('dashboard.enquiries.create')" icon="arrow-right" class="btn-shine">New request</x-button>
+                <x-button :href="route('dashboard.enquiries.create')" icon="arrow-right" >New request</x-button>
                 <x-button :href="route('products.index')" variant="outline-light">Browse equipment</x-button>
             </div>
         </div>

@@ -13,10 +13,10 @@
     ];
 @endphp
 
-<div class="grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12" data-explorer>
+<div class="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-12" data-explorer>
     <figure class="lg:col-span-7">
-        <div class="relative overflow-hidden rounded-3xl bg-film-700 ring-1 ring-film-600">
-            <x-xray name="room-overview" alt="A digital X-ray room with a wall stand on the left, a patient table in the centre and a tube head on a stand behind it"
+        <div class="relative overflow-hidden rounded-2xl bg-film-700 ring-1 ring-film-600">
+            <x-photo name="room-overview" alt="A digital X-ray room with a wall stand on the left, a patient table in the centre and a tube head on a stand behind it"
                      sizes="(min-width: 1280px) 720px, (min-width: 1024px) 58vw, 100vw" class="aspect-[4/3]" />
 
             @foreach ($parts as $i => $part)
@@ -26,7 +26,7 @@
                         data-explorer-target="{{ $i }}"
                         aria-label="Show part {{ $i + 1 }}: {{ $part['name'] }}"
                         aria-pressed="false">
-                    <span class="ping-ring relative isolate flex size-8 items-center justify-center rounded-full bg-film-800 text-sm font-bold text-ink shadow-lg ring-4 ring-white/50 transition duration-200 group-hover/marker:scale-110 group-aria-pressed/marker:scale-110 group-aria-pressed/marker:bg-signal-500 group-aria-pressed/marker:text-navy-950 group-aria-pressed/marker:ring-signal-500/30 sm:size-9">
+                    <span class="relative isolate flex size-8 items-center justify-center rounded-full bg-film-800 text-sm font-bold text-ink shadow-lg ring-4 ring-white/70 transition-colors duration-200 group-hover/marker:scale-110 group-aria-pressed/marker:bg-signal-500 group-aria-pressed/marker:text-navy-950 group-aria-pressed/marker:ring-signal-500/30 sm:size-9">
                         {{ $i + 1 }}
                     </span>
                 </button>
@@ -37,7 +37,7 @@
         </figcaption>
     </figure>
 
-    <ol class="space-y-3 lg:col-span-5" aria-label="Parts of a digital X-ray room">
+    <ol class="space-y-4 lg:col-span-5" aria-label="Parts of a digital X-ray room">
         @foreach ($parts as $i => $part)
             <li>
                 <button type="button"
@@ -47,7 +47,7 @@
                     <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-navy-800 text-sm font-bold text-white transition-colors group-aria-pressed/item:bg-signal-500 group-aria-pressed/item:text-navy-950" aria-hidden="true">{{ $i + 1 }}</span>
                     <span>
                         <span class="block font-bold text-ink">{{ $part['name'] }}</span>
-                        <span class="mt-1 block text-[0.9375rem] leading-relaxed text-ink-2">{{ $part['text'] }}</span>
+                        <span class="mt-1 block text-base leading-relaxed text-ink-2">{{ $part['text'] }}</span>
                     </span>
                 </button>
             </li>

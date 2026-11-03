@@ -1,138 +1,43 @@
 /* ==========================================================================
    Motion system
-   Everything animates transform / opacity / clip-path only, and is disabled
-   under prefers-reduced-motion. Content is never hidden without JavaScript
-   (hidden states are scoped to html.js, which app.js adds).
+   Deliberately quiet: one short fade-and-rise on entrance, soft colour and shadow
+   changes on hover, and nothing that moves unless the visitor scrolled or pointed
+   at it, apart from the hero slideshow, which can be paused.
+   Disabled under prefers-reduced-motion. Content is never hidden without
+   JavaScript (hidden states are scoped to html.js, which app.js adds).
    ========================================================================== */
+
+@theme {
+    --ease-calm: cubic-bezier(0.2, 0, 0, 1);
+}
 
 @keyframes fade-up {
     from {
         opacity: 0;
-        transform: translateY(14px);
+        transform: translateY(10px);
     }
 }
 
-@keyframes word-rise {
+@keyframes rise-in {
     from {
         opacity: 0;
-        transform: translateY(105%) rotate(4deg);
-    }
-}
-
-@keyframes aurora {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0) scale(1);
-    }
-    33% {
-        transform: translate3d(6%, -4%, 0) scale(1.08);
-    }
-    66% {
-        transform: translate3d(-5%, 5%, 0) scale(0.96);
-    }
-}
-
-@keyframes scan {
-    0% {
-        transform: translateY(-10%);
-        opacity: 0;
-    }
-    10%,
-    85% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(1100%);
-        opacity: 0;
-    }
-}
-
-@keyframes float-y {
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-@keyframes marquee {
-    to {
-        transform: translateX(-50%);
-    }
-}
-
-@keyframes shine {
-    from {
-        transform: translateX(-120%) skewX(-20deg);
-    }
-    to {
-        transform: translateX(260%) skewX(-20deg);
-    }
-}
-
-@keyframes spin-border {
-    to {
-        --border-angle: 360deg;
-    }
-}
-
-@keyframes ping-ring {
-    0% {
-        transform: scale(1);
-        opacity: 0.55;
-    }
-    100% {
-        transform: scale(2.1);
-        opacity: 0;
-    }
-}
-
-@keyframes media-reveal {
-    from {
-        clip-path: inset(8% 8% 8% 8% round 2rem);
-        opacity: 0.3;
+        transform: translateY(18px);
     }
 }
 
 @keyframes media-settle {
     from {
-        transform: scale(1.12);
+        transform: scale(1.06);
     }
-}
-
-@keyframes grow-progress {
-    from {
-        transform: scaleX(0);
-    }
-    to {
-        transform: scaleX(1);
-    }
-}
-
-@keyframes parallax-y {
-    from {
-        transform: translateY(-5%) scale(1.1);
-    }
-    to {
-        transform: translateY(5%) scale(1.1);
-    }
-}
-
-@property --border-angle {
-    syntax: '<angle>';
-    inherits: false;
-    initial-value: 0deg;
 }
 
 /* Section reveal (fade + rise) */
 .js [data-reveal] {
     opacity: 0;
-    transform: translateY(28px);
+    transform: translateY(10px);
     transition:
-        opacity 0.9s cubic-bezier(0.2, 0.7, 0.2, 1),
-        transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+        opacity 0.5s var(--ease-calm),
+        transform 0.5s var(--ease-calm);
 }
 
 .js [data-reveal].is-visible {
@@ -140,226 +45,46 @@
     transform: none;
 }
 
-/* Staggered children: each direct child rises in turn (JS sets --i).
-   Uses a one-off animation with backwards fill so that, once finished, the
-   element's own hover / tilt transforms work normally. Cards re-shown by the
+/* Staggered children: each direct child rises in turn (JS sets --i), with the delay capped
+   so long lists never keep anyone waiting. Uses a one-off animation with backwards fill so
+   that, once finished, the element's own hover styles work normally. Cards re-shown by the
    equipment filter replay the entrance. */
-@keyframes stagger-in {
-    from {
-        opacity: 0;
-        transform: translateY(36px) scale(0.98);
-    }
-}
-
 .js [data-stagger]:not(.is-visible) > * {
     opacity: 0;
 }
 
 .js [data-stagger].is-visible > * {
-    animation: stagger-in 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
-    animation-delay: calc(var(--i, 0) * 90ms);
+    animation: fade-up 0.5s var(--ease-calm) backwards;
+    animation-delay: calc(min(var(--i, 0), 5) * 60ms);
 }
 
-/* Split headings: words rise from behind a mask (JS wraps words, sets --w) */
-.split-word {
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: top;
-    padding-bottom: 0.1em;
-    margin-bottom: -0.1em;
+/* Card photos settle into place as their card arrives */
+.js [data-stagger].is-visible .media-settle {
+    animation: media-settle 0.9s var(--ease-calm) backwards;
+    animation-delay: calc(min(var(--i, 0), 5) * 60ms);
 }
 
-.split-word > span {
-    display: inline-block;
-}
-
-.js [data-split]:not(.is-visible) .split-word > span {
-    opacity: 0;
-    transform: translateY(105%);
-}
-
-.js [data-split].is-visible .split-word > span {
-    animation: word-rise 0.9s cubic-bezier(0.2, 0.75, 0.2, 1) both;
-    animation-delay: calc(var(--w, 0) * 55ms + var(--split-delay, 0ms));
-}
-
-/* Hero */
-.hero-aurora {
-    animation: aurora 18s ease-in-out infinite;
-}
-
-.hero-aurora.is-alt {
-    animation-duration: 24s;
-    animation-direction: reverse;
-}
-
-.hero-media {
-    animation: media-reveal 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
-}
-
-.hero-media img {
-    animation: media-settle 2.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both;
-}
-
-@keyframes draw-stroke {
-    from {
-        stroke-dashoffset: 1;
-    }
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-.hero-underline path {
-    stroke-dasharray: 1;
-    animation: draw-stroke 1.1s cubic-bezier(0.65, 0, 0.35, 1) 1.1s both;
-}
-
-.scan-line {
-    animation: scan 5.5s cubic-bezier(0.45, 0, 0.55, 1) 1.8s infinite;
-}
-
-.float-slow {
-    animation: float-y 6s ease-in-out infinite;
-}
-
-.float-slower {
-    animation: float-y 8s ease-in-out 1s infinite;
-}
-
+/* Page headings fade in on load */
 .hero-in {
-    animation: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-    animation-delay: var(--d, 0s);
+    animation: fade-up 0.5s var(--ease-calm) both;
 }
 
-/* Infinite marquee (content is duplicated in markup) */
-.marquee-track {
-    animation: marquee 40s linear infinite;
+/* Header gains a soft shadow once the page scrolls */
+.site-header {
+    transition: box-shadow 0.25s ease;
 }
 
-.marquee:hover .marquee-track {
-    animation-play-state: paused;
+.site-header.is-scrolled {
+    box-shadow: var(--shadow-card);
 }
 
-/* Shine sweep across buttons */
-.btn-shine {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-}
-
-.btn-shine::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    width: 40%;
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
-    transform: translateX(-120%) skewX(-20deg);
-    pointer-events: none;
-}
-
-.btn-shine:hover::after {
-    animation: shine 0.9s ease;
-}
-
-/* Cursor spotlight on cards (JS sets --mx / --my) */
-[data-spotlight] {
-    position: relative;
-}
-
-[data-spotlight]::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    border-radius: inherit;
-    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), var(--spot, rgb(242 140 40 / 0.16)), transparent 45%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-}
-
-[data-spotlight]:hover::before {
-    opacity: 1;
-}
-
-/* 3D tilt (JS sets --rx / --ry on fine pointers only) */
-[data-tilt] {
-    transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-[data-tilt].is-tilting {
-    transition-duration: 0.15s;
-}
-
-/* Rotating gradient border */
-.border-glow {
-    position: relative;
-    isolation: isolate;
-}
-
-.border-glow::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    z-index: -1;
-    border-radius: inherit;
-    background: conic-gradient(from var(--border-angle), transparent 0deg, #f28c28 70deg, #2ec7f0 140deg, transparent 200deg, transparent 360deg);
-    animation: spin-border 7s linear infinite;
-}
-
-/* Hotspot pulse */
-.ping-ring::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: 9999px;
-    background: rgb(255 255 255 / 0.75);
-    animation: ping-ring 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-/* Timeline line draws in when its section is revealed */
-.js [data-reveal] .draw-line {
-    transform: scaleX(0);
-    transition: transform 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s;
-}
-
-.js [data-reveal].is-visible .draw-line {
-    transform: scaleX(1);
-}
-
-/* Floating header: elevates once the page scrolls */
-.site-header .header-bar {
-    transition:
-        box-shadow 0.4s ease,
-        background-color 0.4s ease,
-        transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-.site-header.is-scrolled .header-bar {
-    box-shadow: 0 16px 40px -14px rgb(0 0 0 / 0.8), 0 1px 0 rgb(46 199 240 / 0.15);
-    background-color: rgb(2 7 11 / 0.94);
-}
-
-/* Hero carousel
-   Slides stack in one place; the active one is shown. Outgoing slides leave
-   quickly, incoming slides arrive after a short delay. */
-@keyframes kenburns {
-    from {
-        transform: scale(1.1);
-    }
-    to {
-        transform: scale(1);
-    }
-}
-
+/* Hero slides stack in one place. The old slide fades out quickly; the new heading, text
+   and button rise in one after another while the photo cross-fades and settles. The same
+   entrance plays on page load. */
 .carousel-slide {
     transition:
-        opacity 0.5s ease,
-        transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
-        visibility 0s linear 0.7s;
+        opacity 0.25s ease,
+        visibility 0s linear 0.25s;
 }
 
 .carousel-slide:not([data-active]) {
@@ -369,116 +94,249 @@
 }
 
 .carousel-slide[data-active] {
-    transition-delay: 0.2s, 0.2s, 0s;
+    transition-delay: 0s;
 }
 
-.carousel-text:not([data-active]) {
-    transform: translateY(24px);
+.carousel-media {
+    transition-duration: 0.6s, 0s;
+    transition-delay: 0s, 0.6s;
 }
 
-.carousel-media:not([data-active]) {
-    transform: translateX(6%) scale(0.95);
+.carousel-text[data-active] > * {
+    animation: rise-in 0.6s var(--ease-calm) backwards;
 }
 
-.carousel-media[data-active] .carousel-kenburns {
-    animation: kenburns 9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+.carousel-text[data-active] > :nth-child(2) {
+    animation-delay: 70ms;
 }
 
-.carousel-progress {
+.carousel-text[data-active] > :nth-child(3) {
+    animation-delay: 140ms;
+}
+
+.carousel-media[data-active] img {
+    animation: media-settle 1.2s var(--ease-calm) backwards;
+}
+
+/* The orange line on the active hero tab. While the slideshow plays it fills like a loading
+   bar and app.js moves to the next slide when it finishes; once stopped it simply stays full. */
+@keyframes tab-progress {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+.hero-tab::before {
+    content: '';
+    position: absolute;
+    inset: -2px 0 auto;
+    height: 3px;
+    border-radius: 9999px;
+    background: var(--color-signal-500);
     transform: scaleX(0);
     transform-origin: left;
+    transition: transform 0.5s var(--ease-calm);
 }
 
-[data-carousel-tab][aria-current='true'] .carousel-progress {
-    animation: grow-progress var(--carousel-duration, 7s) linear forwards;
-}
-
-[data-carousel].is-paused .carousel-progress {
-    animation-play-state: paused;
-}
-
-[data-carousel].is-stopped [data-carousel-tab][aria-current='true'] .carousel-progress {
-    animation: none;
+.hero-tab[aria-current='true']::before {
     transform: scaleX(1);
 }
 
-[data-carousel].is-stopped .carousel-icon-pause {
+.is-playing .hero-tab[aria-current='true']::before {
+    animation: tab-progress var(--carousel-duration, 8s) linear;
+}
+
+.is-paused .hero-tab[aria-current='true']::before {
+    animation-play-state: paused;
+}
+
+/* Hero scan: the photo starts normal and a beam crosses it in the same time as the tab's
+   loading line, leaving an X-ray negative behind it. Only runs while the slideshow plays,
+   so a stopped slideshow and reduced motion both show the plain photo. */
+@keyframes hero-scan-reveal {
+    from {
+        clip-path: inset(0 100% 0 0);
+    }
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+@keyframes hero-scan-beam {
+    0% {
+        opacity: 0;
+        transform: translateX(0);
+    }
+    3%,
+    97% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+.hero-scan-negative {
+    filter: grayscale(1) invert(1) sepia(0.6) hue-rotate(155deg) saturate(1.8) contrast(1.25) brightness(0.95);
+    clip-path: inset(0 100% 0 0);
+}
+
+.hero-scan-beam {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.hero-scan-beam::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 2px;
+    background: #9beaff;
+    box-shadow:
+        0 0 12px 2px rgb(46 199 240 / 0.8),
+        0 0 40px 10px rgb(46 199 240 / 0.25);
+}
+
+.is-playing .carousel-media[data-active] .hero-scan-negative {
+    animation:
+        media-settle 1.2s var(--ease-calm) backwards,
+        hero-scan-reveal var(--carousel-duration, 8s) linear forwards;
+}
+
+.is-playing .carousel-media[data-active] .hero-scan-beam {
+    animation: hero-scan-beam var(--carousel-duration, 8s) linear forwards;
+}
+
+/* The finished negative stays in place while its slide fades out */
+.is-playing .carousel-media:not([data-active]) .hero-scan-negative {
+    clip-path: none;
+}
+
+.is-paused .carousel-media[data-active] img,
+.is-paused .carousel-media[data-active] .hero-scan-negative,
+.is-paused .carousel-media[data-active] .hero-scan-beam {
+    animation-play-state: paused;
+}
+
+[data-carousel]:not(.is-playing) .carousel-icon-pause,
+.is-playing .carousel-icon-play {
     display: none;
 }
 
-[data-carousel].is-stopped .carousel-icon-play {
-    display: block;
+/* Filter and section tabs: the orange line draws under the chosen tab */
+.filter-tab::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: var(--color-signal-500);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease-calm);
 }
 
-/* Scroll-linked effects where the browser supports scroll timelines */
-@supports (animation-timeline: view()) {
-    .scroll-progress {
-        transform-origin: left;
-        animation: grow-progress linear both;
-        animation-timeline: scroll(root);
-    }
+.filter-tab[aria-pressed='true']::after,
+.filter-tab[aria-current='true']::after {
+    transform: scaleX(1);
+}
 
-    .parallax-img {
-        animation: parallax-y linear both;
-        animation-timeline: view();
+/* Homepage equipment grid: tile widths come from app.js, which sets --span */
+@media (min-width: 64rem) {
+    [data-filter-grid] > [data-filter-item] {
+        grid-column: span var(--span, 1);
     }
 }
 
-@supports not (animation-timeline: view()) {
-    .scroll-progress {
-        display: none;
+/* Product tile summary: always shown on touch screens, slides open on hover or keyboard focus elsewhere */
+.tile-reveal {
+    display: grid;
+    grid-template-rows: 1fr;
+    margin-top: 0.5rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .tile-shade {
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
+
+    .group:hover .tile-shade,
+    .group:focus-within .tile-shade {
+        opacity: 1;
+    }
+
+    .tile-reveal {
+        grid-template-rows: 0fr;
+        margin-top: 0;
+        opacity: 0;
+        transition:
+            grid-template-rows 0.4s var(--ease-calm),
+            margin-top 0.4s var(--ease-calm),
+            opacity 0.3s ease;
+    }
+
+    .group:hover .tile-reveal,
+    .group:focus-within .tile-reveal {
+        grid-template-rows: 1fr;
+        margin-top: 0.5rem;
+        opacity: 1;
+    }
+}
+
+/* An underline that draws across text when its .group parent is hovered or focused */
+.link-draw {
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+    transition: background-size 0.4s var(--ease-calm);
+}
+
+.group:hover .link-draw,
+.group:focus-within .link-draw {
+    background-size: 100% 1px;
+}
+
+/* Switching between light and dark cross-fades the page (see app.js) */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.25s;
 }
 
 @media (prefers-reduced-motion: reduce) {
     .js [data-reveal],
-    .js [data-stagger] > *,
-    .js [data-split] .split-word > span {
+    .js [data-stagger] > * {
         opacity: 1 !important;
         transform: none !important;
         transition: none !important;
         animation: none !important;
     }
 
-    .hero-aurora,
-    .hero-media,
-    .hero-media img,
-    .float-slow,
-    .float-slower,
     .hero-in,
-    .marquee-track,
-    .btn-shine::after,
-    .border-glow::before,
-    .ping-ring::after,
-    .parallax-img,
-    .hero-underline path,
-    .carousel-kenburns {
+    .media-settle,
+    .carousel-text > *,
+    .carousel-media img {
         animation: none !important;
     }
 
-    .carousel-slide {
+    .carousel-slide,
+    .hero-tab::before,
+    .filter-tab::after,
+    .tile-shade,
+    .tile-reveal,
+    .link-draw,
+    .site-header {
         transition: none !important;
-        transform: none !important;
-    }
-
-    .scan-line,
-    .scroll-progress {
-        display: none;
-    }
-
-    [data-tilt] {
-        transform: none !important;
-    }
-
-    .js [data-reveal] .draw-line {
-        transform: none;
     }
 }
 
 @media print {
     .js [data-reveal],
-    .js [data-stagger] > *,
-    .js [data-split] .split-word > span {
+    .js [data-stagger] > * {
         opacity: 1;
         transform: none;
     }
@@ -489,18 +347,4 @@
         linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
         linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
     background-size: 32px 32px;
-}
-
-@utility bg-grid-dark {
-    background-image:
-        linear-gradient(to right, rgb(46 199 240 / 0.07) 1px, transparent 1px),
-        linear-gradient(to bottom, rgb(46 199 240 / 0.07) 1px, transparent 1px);
-    background-size: 40px 40px;
-}
-
-@utility text-gradient-signal {
-    background-image: linear-gradient(100deg, #ffb066 0%, #f28c28 45%, #ffd2a1 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
 }

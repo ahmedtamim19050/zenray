@@ -2,7 +2,7 @@
     <x-slot:subtitle>Bill customers, record payments and follow up on overdue invoices.</x-slot:subtitle>
     <x-slot:actions>
         <x-button :href="route('admin.invoices.export', array_filter(['status' => $filter]))" variant="outline" size="sm">Export CSV</x-button>
-        <x-button :href="route('admin.invoices.create')" size="sm" class="btn-shine"><span aria-hidden="true">+</span> New invoice</x-button>
+        <x-button :href="route('admin.invoices.create')" size="sm" ><span aria-hidden="true">+</span> New invoice</x-button>
     </x-slot:actions>
 
     <div class="mb-6 grid gap-4 sm:grid-cols-3">

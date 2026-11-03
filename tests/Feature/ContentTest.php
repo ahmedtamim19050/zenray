@@ -89,7 +89,7 @@ test('new services become options on the enquiry form', function () {
     $this->actingAs(admin())->post('/admin/content/services', ['name' => 'Detector Repair', 'slug' => 'detector-repair', 'icon' => 'support', 'is_active' => '1']);
     SiteContent::apply();
 
-    $this->get('/request-a-quote')->assertSee('<option value="detector-repair"', false);
+    $this->get('/request-a-quote')->assertSee('name="interest" value="detector-repair"', false);
 });
 
 test('content is validated', function () {

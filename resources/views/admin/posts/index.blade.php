@@ -2,7 +2,7 @@
     <x-slot:subtitle>Articles published on the website blog.</x-slot:subtitle>
     <x-slot:actions>
         <x-button :href="route('blog.index')" variant="outline" size="sm" target="_blank" rel="noopener">View blog<span class="sr-only"> (opens in a new tab)</span></x-button>
-        <x-button :href="route('admin.posts.create')" size="sm" class="btn-shine"><span aria-hidden="true">+</span> New post</x-button>
+        <x-button :href="route('admin.posts.create')" size="sm" ><span aria-hidden="true">+</span> New post</x-button>
     </x-slot:actions>
 
     <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

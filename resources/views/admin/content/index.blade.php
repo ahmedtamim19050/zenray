@@ -15,7 +15,7 @@
     <x-slot:subtitle>{{ $config['description'] }}</x-slot:subtitle>
     <x-slot:actions>
         <x-button :href="$publicUrl" variant="outline" size="sm" target="_blank" rel="noopener">View on website<span class="sr-only"> (opens in a new tab)</span></x-button>
-        <x-button :href="route('admin.content.create', $resource)" size="sm" class="btn-shine">
+        <x-button :href="route('admin.content.create', $resource)" size="sm" >
             <span aria-hidden="true">+</span> Add {{ Str::lower($config['singular']) }}
         </x-button>
     </x-slot:actions>

@@ -2,7 +2,7 @@
     <x-slot:subtitle>{{ $enquiry->typeLabel() }} · received {{ $enquiry->created_at->format('j F Y, H:i') }}</x-slot:subtitle>
     <x-slot:actions>
         <x-button :href="route('admin.enquiries.index')" variant="outline" size="sm">← All enquiries</x-button>
-        <x-button :href="route('admin.quotes.create', ['enquiry' => $enquiry->id])" size="sm" class="btn-shine"><x-icon name="document" class="size-4" /> Create quote</x-button>
+        <x-button :href="route('admin.quotes.create', ['enquiry' => $enquiry->id])" size="sm" ><x-icon name="document" class="size-4" /> Create quote</x-button>
     </x-slot:actions>
 
     <div class="grid gap-6 xl:grid-cols-3">

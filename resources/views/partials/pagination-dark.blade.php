@@ -1,8 +1,8 @@
 {{-- Pagination for the public (X-ray themed) site. Usage: $paginator->links('partials.pagination-dark') --}}
 @if ($paginator->hasPages())
     @php
-        $base = 'flex h-10 min-w-10 items-center justify-center rounded-full px-3 font-mono text-sm transition';
-        $link = $base.' bg-film-800 text-ink-2 ring-1 ring-film-600 hover:text-glow-100 hover:ring-glow-400/40';
+        $base = 'flex h-11 min-w-11 items-center justify-center rounded-full px-3 text-sm transition';
+        $link = $base.' bg-film-800 text-ink-2 ring-1 ring-film-600 hover:text-ink hover:ring-glow-400/40';
         $off = $base.' text-ink-3/50';
     @endphp
     <nav class="flex items-center justify-center gap-1.5" aria-label="Pagination">

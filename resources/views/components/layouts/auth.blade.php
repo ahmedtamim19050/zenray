@@ -13,7 +13,7 @@
                 </a>
 
                 <div class="my-auto w-full max-w-md py-12">
-                    <h1 data-split class="text-3xl font-bold tracking-[-0.03em] text-navy-900 sm:text-4xl">{{ $heading }}</h1>
+                    <h1 class="text-3xl font-bold tracking-[-0.03em] text-navy-900 sm:text-4xl">{{ $heading }}</h1>
                     @if ($subheading) <p class="mt-3 text-slate-600">{{ $subheading }}</p> @endif
 
                     @if (session('status'))
@@ -29,7 +29,7 @@
             <aside class="relative isolate hidden overflow-hidden bg-navy-950 lg:block" aria-hidden="true">
                 <x-photo name="c-arm" alt="" sizes="50vw" class="absolute inset-0 -z-20 opacity-60" />
                 <div class="absolute inset-0 -z-10 bg-linear-to-t from-navy-950 via-navy-950/70 to-navy-950/20"></div>
-                <div class="hero-aurora absolute -top-32 -right-32 -z-10 size-[30rem] rounded-full bg-signal-500/25 blur-[110px]"></div>
+                <div class="absolute -top-32 -right-32 -z-10 size-[30rem] rounded-full bg-signal-500/25 blur-[110px]"></div>
                 <div class="bg-grid absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_bottom_left,black,transparent_70%)]"></div>
 
                 <div class="flex h-full flex-col justify-end p-12 xl:p-16">
