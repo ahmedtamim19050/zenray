@@ -38,6 +38,10 @@
             </div>
         </div>
 
+        @if (($padToggle ?? false) && ! ($onPad ?? false) && blank(config('zenray.contact.phone')) && blank(config('zenray.contact.email')) && blank(config('zenray.contact.address')))
+            <p class="no-print mx-auto mb-4 max-w-[52rem] px-4 text-sm text-slate-600">The footer is empty. Add your phone, email and address in <a href="{{ route('admin.settings.edit') }}" class="font-semibold text-navy-800 underline">Settings</a>.</p>
+        @endif
+
         @if ($onPad ?? false)
             <p class="no-print mx-auto mb-4 max-w-[52rem] px-4 text-sm text-slate-600">Load your pad in the printer. Header, footer and watermark are left blank because the pad already has them. Use A4 paper at 100% scale.</p>
         @endif

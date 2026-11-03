@@ -17,7 +17,6 @@
     $facebook = config('zenray.social.facebook');
     [$stateLabel] = $document->state();
     $stamp = match (true) {
-        ! $isQuote && $document->isPaid() => ['PAID', 'text-emerald-600 border-emerald-600'],
         $document->status === 'void' => ['VOID', 'text-red-600 border-red-600'],
         $document->status === 'draft' => ['DRAFT', 'text-slate-400 border-slate-400'],
         default => null,
@@ -33,7 +32,7 @@
             <div class="pointer-events-none absolute top-1/2 left-1/2 flex w-3/5 -translate-x-1/2 -translate-y-1/2 flex-col items-center select-none print:fixed" aria-hidden="true" data-watermark>
                 <img src="{{ asset('images/zenray-mark.svg') }}" alt="" width="160" height="112" class="w-3/5 opacity-[0.12]">
                 <p class="mt-2 text-center text-3xl font-bold tracking-wider whitespace-nowrap text-navy-800 uppercase opacity-[0.12]">{{ config('zenray.name') }}</p>
-                <img src="{{ asset('images/photos/room-overview-800.webp') }}" alt="" width="800" height="600" class="mt-4 w-full opacity-[0.3] mix-blend-multiply brightness-[1.35] contrast-[1.5] grayscale [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_72%)]">
+                <img src="{{ asset('images/invoice-watermark-equipment.png') }}" alt="" width="900" height="792" class="mt-2 w-full">
             </div>
         @endunless
 
@@ -124,13 +123,13 @@
                 @if ($document->customer_email) <p>{{ $document->customer_email }}</p> @endif
                 @if ($document->customer_phone) <p>{{ $document->customer_phone }}</p> @endif
             </div>
-            <div class="sm:text-right">
-                <p class="text-[0.6875rem] font-semibold tracking-widest text-slate-400 uppercase">{{ $isQuote ? 'Quotation total' : ($document->status === 'issued' ? 'Balance due' : 'Amount') }}</p>
-                <p class="mt-1.5 text-3xl font-bold tracking-tight text-navy-900 tabular-nums">
-                    {{ ! $isQuote && $document->status === 'issued' ? \App\Support\Money::format($document->balance(), $document->currency) : $document->money('total') }}
-                </p>
-                <p class="text-xs text-slate-500">{{ $document->currency }}</p>
-            </div>
+            @if ($isQuote)
+                <div class="sm:text-right">
+                    <p class="text-[0.6875rem] font-semibold tracking-widest text-slate-400 uppercase">Quotation total</p>
+                    <p class="mt-1.5 text-3xl font-bold tracking-tight text-navy-900 tabular-nums">{{ $document->money('total') }}</p>
+                    <p class="text-xs text-slate-500">{{ $document->currency }}</p>
+                </div>
+            @endif
         </div>
 
         {{-- Items --}}
@@ -166,35 +165,39 @@
                 @endif
                 <div class="flex justify-between"><dt class="text-slate-500">{{ $billing['tax_label'] }} ({{ (float) $document->tax_rate }}%)</dt><dd>{{ $document->money('tax_total') }}</dd></div>
                 <div class="flex justify-between border-t-2 border-navy-800 pt-2 text-base font-bold text-navy-900"><dt>Total</dt><dd>{{ $document->money('total') }}</dd></div>
-                @if (! $isQuote && (float) $document->amount_paid > 0)
-                    <div class="flex justify-between text-emerald-700"><dt>Paid</dt><dd>-{{ $document->money('amount_paid') }}</dd></div>
-                    <div class="flex justify-between font-bold text-navy-900"><dt>Balance due</dt><dd>{{ \App\Support\Money::format($document->balance(), $document->currency) }}</dd></div>
-                @endif
             </dl>
         </div>
 
         {{-- Notes, terms, payment details --}}
-        <div class="mt-10 grid gap-6 border-t border-slate-200 pt-6 text-xs sm:grid-cols-2">
-            @if ($document->notes)
-                <div>
-                    <p class="font-semibold tracking-widest text-navy-800 uppercase">Notes</p>
-                    <p class="mt-1.5 whitespace-pre-line">{{ $document->notes }}</p>
-                </div>
-            @endif
-            @if ($document->terms)
-                <div>
-                    <p class="font-semibold tracking-widest text-navy-800 uppercase">Terms</p>
-                    <p class="mt-1.5 whitespace-pre-line">{{ $document->terms }}</p>
-                </div>
-            @endif
-            @if (! $isQuote && $billing['payment_details'])
-                <div class="sm:col-span-2">
-                    <p class="font-semibold tracking-widest text-navy-800 uppercase">How to pay</p>
-                    <p class="mt-1.5 whitespace-pre-line">{{ $billing['payment_details'] }}</p>
-                    <p class="mt-1 text-slate-500">Please quote <span class="font-mono font-semibold text-navy-900">{{ $document->number }}</span> as the payment reference.</p>
-                </div>
-            @endif
-        </div>
+        @if ($isQuote || $billing['payment_details'])
+            <div class="mt-10 grid gap-6 border-t border-slate-200 pt-6 text-xs sm:grid-cols-2">
+                @if ($isQuote && $document->notes)
+                    <div>
+                        <p class="font-semibold tracking-widest text-navy-800 uppercase">Notes</p>
+                        <p class="mt-1.5 whitespace-pre-line">{{ $document->notes }}</p>
+                    </div>
+                @endif
+                @if ($isQuote && $document->terms)
+                    <div>
+                        <p class="font-semibold tracking-widest text-navy-800 uppercase">Terms</p>
+                        <p class="mt-1.5 whitespace-pre-line">{{ $document->terms }}</p>
+                    </div>
+                @endif
+                @if (! $isQuote && $billing['payment_details'])
+                    <div class="sm:col-span-2">
+                        <p class="font-semibold tracking-widest text-navy-800 uppercase">How to pay</p>
+                        <p class="mt-1.5 whitespace-pre-line">{{ $billing['payment_details'] }}</p>
+                        <p class="mt-1 text-slate-500">Please quote <span class="font-mono font-semibold text-navy-900">{{ $document->number }}</span> as the payment reference.</p>
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        @unless ($isQuote)
+            <div class="mt-20 flex justify-end break-inside-avoid" data-signature>
+                <p class="w-56 border-t border-navy-800 pt-1.5 text-center text-xs font-semibold text-navy-900">Authorized signature</p>
+            </div>
+        @endunless
 
         @if ($isQuote)
             <footer class="mt-10 flex items-center justify-between gap-4 border-t border-slate-200 pt-4 text-[0.6875rem] text-slate-400">
@@ -210,7 +213,7 @@
         </table>
 
         @unless ($onPad)
-            <footer class="relative mt-auto flex min-h-[24mm] flex-col justify-between gap-2 bg-navy-800 px-6 py-3 text-xs leading-snug font-medium text-white sm:flex-row sm:items-center sm:gap-8 sm:px-[7%] print:fixed print:inset-x-0 print:bottom-0" data-letterhead>
+            <footer class="relative mt-auto grid min-h-[24mm] gap-2 bg-[#2E3192] px-[5%] py-3 text-xs leading-snug font-semibold text-white sm:grid-cols-2 print:fixed print:inset-x-0 print:bottom-0" data-letterhead>
                 <div>
                     @if ($contact['address']) <p class="whitespace-pre-line">{{ $contact['address'] }}</p> @endif
                 </div>

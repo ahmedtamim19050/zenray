@@ -234,6 +234,43 @@ test('admins print invoices with the letterhead on plain paper, or content only 
         ->assertSee($invoice->issue_date->format('d/m/Y'));
 });
 
+test('the invoice footer shows the contact details from settings, except on the pad', function () {
+    config(['zenray.contact.phone' => '01799-110011', 'zenray.contact.email' => 'sales@zenray.test', 'zenray.contact.address' => 'House 45, Dhaka-1207']);
+    $invoice = customerInvoice(User::factory()->create());
+    $admin = salesAdmin();
+
+    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}/print")->assertOk()
+        ->assertSee('01799-110011')
+        ->assertSee('sales@zenray.test')
+        ->assertSee('House 45, Dhaka-1207');
+
+    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}/print?pad=1")->assertOk()
+        ->assertDontSee('01799-110011')
+        ->assertDontSee('sales@zenray.test')
+        ->assertDontSee('House 45, Dhaka-1207');
+});
+
+test('printed invoices leave out balance, notes and terms and have a signature line', function (string $query) {
+    $invoice = customerInvoice(User::factory()->create(), ['notes' => 'Invoice note text', 'terms' => 'Invoice terms text']);
+    $invoice->recordPayment(['amount' => 2000, 'paid_on' => today()->toDateString(), 'method' => 'cash']);
+
+    $this->actingAs(salesAdmin())->get("/admin/invoices/{$invoice->number}/print{$query}")->assertOk()
+        ->assertSee('Authorized signature')
+        ->assertDontSee('Balance due')
+        ->assertDontSee('Invoice note text')
+        ->assertDontSee('Invoice terms text');
+})->with(['', '?pad=1']);
+
+test('quotes keep their notes and terms and have no signature line', function () {
+    $admin = salesAdmin();
+    $this->actingAs($admin)->post('/admin/quotes', documentPayload([['description' => 'Site survey', 'quantity' => 1, 'unit_price' => 5000]], ['notes' => 'Quote note text', 'terms' => 'Quote terms text']));
+
+    $this->actingAs($admin)->get('/admin/quotes/'.Quote::firstOrFail()->number.'/print')->assertOk()
+        ->assertSee('Quote note text')
+        ->assertSee('Quote terms text')
+        ->assertDontSee('Authorized signature');
+});
+
 test('customers always get the full letterhead and no pad option', function () {
     $customer = User::factory()->create();
     $invoice = customerInvoice($customer);
@@ -345,7 +382,7 @@ test('payments are recorded until the invoice is paid', function () {
     $this->actingAs($admin)->post("/admin/invoices/{$invoice->number}/void")->assertSessionHasErrors('void');
 
     $this->actingAs($admin)->get('/admin/invoices?status=paid')->assertSee($invoice->number);
-    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}/print")->assertOk()->assertSee('PAID');
+    $this->actingAs($admin)->get("/admin/invoices/{$invoice->number}/print")->assertOk()->assertSee('Paid')->assertDontSee('PAID');
 });
 
 test('overdue invoices are reported', function () {
